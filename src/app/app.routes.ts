@@ -18,6 +18,11 @@ export const routes: Routes = [
     title: 'Connexion - SMS2I'
   },
   {
+    path: 'admin',
+    loadComponent: () => import('./pages/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    title: 'Admin - SMS2I'
+  },
+  {
     path: '**',
     redirectTo: ''
   }

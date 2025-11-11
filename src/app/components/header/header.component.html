@@ -17,6 +17,7 @@
       <ul class="navbar-menu" [class.active]="isMenuOpen">
         <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Accueil</a></li>
         <li><a routerLink="/formations" routerLinkActive="active" (click)="closeMenu()">Formations</a></li>
+        <li><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a></li>
         <li><a routerLink="/login" class="btn btn-primary btn-nav" (click)="closeMenu()">Connexion</a></li>
       </ul>
     </nav>
