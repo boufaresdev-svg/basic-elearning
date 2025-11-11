@@ -14,6 +14,91 @@
   </div>
 </section>
 
+<!-- Section Formations -->
+<section class="section formations-section">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2>Nos Modalités de Formation</h2>
+      <p class="section-subtitle">
+        Des formations certifiantes adaptées à vos besoins et disponibles selon vos préférences
+      </p>
+    </div>
+
+    <div class="formations-grid">
+      @for (formation of formationTypes; track formation.title) {
+        <div class="formation-card card" [class.highlight]="formation.highlight">
+          <div class="formation-icon" [attr.data-icon]="formation.icon">
+            @if (formation.icon === 'on-site') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            }
+            @if (formation.icon === 'inter') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            }
+            @if (formation.icon === 'intra') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            }
+            @if (formation.icon === 'online') {
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            }
+          </div>
+          <h3>{{ formation.title }}</h3>
+          <p>{{ formation.description }}</p>
+          @if (formation.highlight) {
+            <span class="formation-badge">Populaire</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="cta-box">
+      <h3>Formations Certifiantes Disponibles</h3>
+      <p>Automatisme, supervision industrielle, nouvelles technologies et plus encore...</p>
+      <a href="/formations" class="btn btn-primary">Voir Toutes Les Formations</a>
+    </div>
+  </div>
+</section>
+
+<!-- Section Services -->
+<section class="section services-section">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2>Nos Partenaires</h2>
+      <p class="section-subtitle">Ils nous accordent leur confiance</p>
+    </div>
+
+    <div class="partners-marquee">
+      <div class="partners-track">
+        @for (partner of partners; track partner.name) {
+          <div class="partner-item">
+            <span>{{ partner.name }}</span>
+          </div>
+        }
+        <!-- Duplicate for infinite scroll effect -->
+        @for (partner of partners; track partner.name) {
+          <div class="partner-item">
+            <span>{{ partner.name }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Section Services -->
 <section class="section services-section">
   <div class="container">
@@ -79,92 +164,8 @@
   </div>
 </section>
 
-<!-- Section Formations -->
-<section class="section formations-section">
-  <div class="container">
-    <div class="section-header text-center">
-      <h2>Nos Modalités de Formation</h2>
-      <p class="section-subtitle">
-        Des formations certifiantes adaptées à vos besoins et disponibles selon vos préférences
-      </p>
-    </div>
-
-    <div class="formations-grid">
-      @for (formation of formationTypes; track formation.title) {
-        <div class="formation-card card" [class.highlight]="formation.highlight">
-          <div class="formation-icon" [attr.data-icon]="formation.icon">
-            @if (formation.icon === 'on-site') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-            }
-            @if (formation.icon === 'inter') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            }
-            @if (formation.icon === 'intra') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-            }
-            @if (formation.icon === 'online') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            }
-          </div>
-          <h3>{{ formation.title }}</h3>
-          <p>{{ formation.description }}</p>
-          @if (formation.highlight) {
-            <span class="formation-badge">Populaire</span>
-          }
-        </div>
-      }
-    </div>
-
-    <div class="cta-box">
-      <h3>Formations Certifiantes Disponibles</h3>
-      <p>Automatisme, supervision industrielle, nouvelles technologies et plus encore...</p>
-      <a href="/formations" class="btn btn-primary">Voir Toutes Les Formations</a>
-    </div>
-  </div>
-</section>
-
 <!-- Section Partenaires -->
 <section class="section partners-section">
-  <div class="container">
-    <div class="section-header text-center">
-      <h2>Nos Partenaires</h2>
-      <p class="section-subtitle">Ils nous accordent leur confiance</p>
-    </div>
-
-    <div class="partners-marquee">
-      <div class="partners-track">
-        @for (partner of partners; track partner.name) {
-          <div class="partner-item">
-            <span>{{ partner.name }}</span>
-          </div>
-        }
-        <!-- Duplicate for infinite scroll effect -->
-        @for (partner of partners; track partner.name) {
-          <div class="partner-item">
-            <span>{{ partner.name }}</span>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Section À Propos -->
 <section class="section about-section">
   <div class="container">
     <div class="about-content">
