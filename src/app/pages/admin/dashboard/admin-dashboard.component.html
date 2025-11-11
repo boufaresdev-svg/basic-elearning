@@ -344,62 +344,210 @@
     @if (activeTab === 'courses') {
       <div class="tab-content">
         <div class="content-header">
-          <h1>Tous les Cours</h1>
+          <h1>Bibliothèque de Cours</h1>
           <p>Gérez et organisez tous vos cours de formation</p>
         </div>
 
         @if (courses.length > 0) {
-          <div class="courses-overview">
-            @for (category of categoryOptions; track category.value) {
-              <div class="category-section">
-                <h2 class="category-title">{{ category.label }}</h2>
+          <!-- Improved Search and Filter Controls -->
+          <div class="bibliotheque-controls card">
+            <div class="search-sort-bar">
+              <div class="search-container">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="search-icon">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input
+                  type="text"
+                  [(ngModel)]="bibliothequeSearchTerm"
+                  placeholder="Rechercher par titre ou description..."
+                  class="search-input"
+                />
+              </div>
 
-                @if (getCoursesByCategory(category.value).length > 0) {
-                  <div class="courses-list">
-                    @for (course of getCoursesByCategory(category.value); track course.id) {
-                      <div class="course-item card">
-                        <div class="course-header">
-                          <h3>{{ course.title }}</h3>
-                          <div class="course-meta">
-                            <span class="content-count">{{ course.contents.length }} modules</span>
-                            <span [class]="'access-badge ' + getAccessKeyClass(course)">
-                              {{ course.accessKey ? '🔒 Accès Généré' : '🔓 Pas d\'accès' }}
-                            </span>
-                          </div>
-                        </div>
-                        <p class="course-description">{{ course.description }}</p>
-                        <div class="course-actions">
-                          <button
-                            (click)="selectCourse(course)"
-                            class="btn btn-secondary btn-small">
-                            Modifier
-                          </button>
-                          @if (!course.accessKey) {
-                            <button
-                              (click)="generateAccessKey(course)"
-                              class="btn btn-primary btn-small">
-                              Générer Clé
-                            </button>
-                          }
-                          @if (course.accessKey) {
-                            <button
-                              (click)="copyToClipboard(course.accessKey)"
-                              class="btn btn-info btn-small">
-                              Copier: {{ course.accessKey }}
-                            </button>
-                          }
-                          <button
-                            (click)="deleteCourse(course.id)"
-                            class="btn btn-danger btn-small">
-                            Supprimer
-                          </button>
-                        </div>
-                      </div>
-                    }
+              <div class="sort-container">
+                <label for="sort-select">Trier par:</label>
+                <select
+                  id="sort-select"
+                  [(ngModel)]="bibliothequeSort"
+                  class="sort-select"
+                >
+                  <option value="date">Date (Plus récent)</option>
+                  <option value="title">Titre (A-Z)</option>
+                  <option value="category">Catégorie</option>
+                  <option value="access">Statut d'accès</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Bulk Actions Bar -->
+            @if (selectedCourseIds.size > 0) {
+              <div class="bulk-actions-bar">
+                <span class="selection-count">{{ selectedCourseIds.size }} cours sélectionné(s)</span>
+                <div class="bulk-action-buttons">
+                  <button
+                    (click)="generateAccessKeysForSelected()"
+                    class="btn btn-info btn-small">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="3" y="11" width="18" height="10" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                    </svg>
+                    Générer Clés ({{ selectedCourseIds.size }})
+                  </button>
+                  <button
+                    (click)="exportCoursesAsJson()"
+                    class="btn btn-secondary btn-small">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7,10 12,15 17,10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Exporter
+                  </button>
+                  <button
+                    (click)="deleteSelectedCourses()"
+                    class="btn btn-danger btn-small">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Improved Courses List View -->
+          <div class="courses-overview improved">
+            @if (searchCourses(bibliothequeSearchTerm).length > 0) {
+              @for (course of searchCourses(bibliothequeSearchTerm); track course.id) {
+                <div class="course-item-enhanced card">
+                  <!-- Checkbox for bulk selection -->
+                  <div class="course-checkbox">
+                    <input
+                      type="checkbox"
+                      [checked]="selectedCourseIds.has(course.id)"
+                      (change)="toggleCourseSelection(course.id)"
+                      class="checkbox"
+                    />
                   </div>
-                } @else {
-                  <p class="no-courses">Aucun cours dans cette catégorie</p>
-                }
+
+                  <div class="course-main-info">
+                    <div class="course-header-enhanced">
+                      <h3>{{ course.title }}</h3>
+                      <div class="course-meta-tags">
+                        <span class="category-tag" [class]="course.category">
+                          {{ getCategoryLabel(course.category) }}
+                        </span>
+                        <span [class]="'access-badge ' + getAccessKeyClass(course)">
+                          @if (course.accessKey) {
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                            </svg>
+                            Débloqué
+                          } @else {
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                            </svg>
+                            Verrouillé
+                          }
+                        </span>
+                      </div>
+                    </div>
+                    <p class="course-description">{{ course.description }}</p>
+
+                    <!-- Course Statistics -->
+                    <div class="course-stats">
+                      <div class="stat-item">
+                        <span class="stat-icon">📚</span>
+                        <span>{{ getCourseStats(course).modules }} modules</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-icon">⏱️</span>
+                        <span>{{ getCourseStats(course).totalDuration }}</span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-icon">📅</span>
+                        <span>{{ course.updatedAt ? (course.updatedAt | date:'short') : (course.createdAt | date:'short') }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Course Actions -->
+                  <div class="course-actions-enhanced">
+                    <button
+                      (click)="previewCourseDetails(course)"
+                      class="action-icon-btn"
+                      title="Aperçu">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button
+                      (click)="selectCourse(course)"
+                      class="action-icon-btn"
+                      title="Modifier">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      (click)="duplicateCourse(course)"
+                      class="action-icon-btn"
+                      title="Dupliquer">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                      </svg>
+                    </button>
+                    @if (!course.accessKey) {
+                      <button
+                        (click)="generateAccessKey(course)"
+                        class="action-icon-btn generate"
+                        title="Générer clé">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="16"></line>
+                          <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                      </button>
+                    } @else {
+                      <button
+                        (click)="copyToClipboard(course.accessKey)"
+                        class="action-icon-btn copy"
+                        title="Copier clé">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                      </button>
+                    }
+                    <button
+                      (click)="deleteCourse(course.id)"
+                      class="action-icon-btn delete"
+                      title="Supprimer">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="empty-state modern">
+                <div class="empty-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </div>
+                <h2>Aucun cours trouvé</h2>
+                <p>Essayez une autre recherche ou tri</p>
               </div>
             }
           </div>
@@ -414,6 +562,74 @@
           </div>
         }
       </div>
+
+      <!-- Course Preview Modal -->
+      @if (showCoursePreview && previewCourse) {
+        <div class="modal-overlay" (click)="closePreview()">
+          <div class="modal-content course-preview-modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>Aperçu du Cours</h2>
+              <button class="modal-close" (click)="closePreview()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="preview-item">
+                <strong>Titre:</strong> {{ previewCourse.title }}
+              </div>
+              <div class="preview-item">
+                <strong>Catégorie:</strong> {{ getCategoryLabel(previewCourse.category) }}
+              </div>
+              <div class="preview-item">
+                <strong>Description:</strong> {{ previewCourse.description }}
+              </div>
+              <div class="preview-item">
+                <strong>Modules:</strong> {{ getCourseStats(previewCourse).modules }}
+              </div>
+              <div class="preview-item">
+                <strong>Durée totale:</strong> {{ getCourseStats(previewCourse).totalDuration }}
+              </div>
+              <div class="preview-item">
+                <strong>Créé le:</strong> {{ previewCourse.createdAt | date:'medium' }}
+              </div>
+              @if (previewCourse.updatedAt) {
+                <div class="preview-item">
+                  <strong>Modifié le:</strong> {{ previewCourse.updatedAt | date:'medium' }}
+                </div>
+              }
+              <div class="preview-item">
+                <strong>Statut d'accès:</strong>
+                @if (previewCourse.accessKey) {
+                  <span class="access-badge active">✓ Débloqué ({{ previewCourse.accessKey }})</span>
+                } @else {
+                  <span class="access-badge inactive">✗ Verrouillé</span>
+                }
+              </div>
+              @if (previewCourse.contents.length > 0) {
+                <div class="preview-item">
+                  <strong>Contenu:</strong>
+                  <ul class="content-list">
+                    @for (content of previewCourse.contents; track content.id) {
+                      <li>
+                        <span class="content-title">{{ content.title }}</span>
+                        @if (content.duration) {
+                          <span class="content-duration">{{ content.duration }}</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+            <div class="modal-footer">
+              <button (click)="closePreview()" class="btn btn-secondary">Fermer</button>
+            </div>
+          </div>
+        </div>
+      }
     }
 
     <!-- Tab: Créer un Cours -->

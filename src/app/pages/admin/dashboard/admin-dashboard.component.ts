@@ -21,6 +21,8 @@ export interface Course {
   contents: CourseContent[];
   accessKey?: string;
   createdAt: Date;
+  updatedAt?: Date;
+  totalDuration?: number;
 }
 
 export interface UploadProgress {
@@ -37,6 +39,13 @@ export interface UploadProgress {
 export class AdminDashboardComponent {
   activeTab: 'courses' | 'create' | 'manage' | 'user' = 'user';
   userCategoryFilter: 'thermo' | 'automatisme' | 'process' | 'all' = 'all';
+
+  // Bibliotheque improvements
+  bibliothequeSearchTerm: string = '';
+  bibliothequeSort: 'date' | 'title' | 'category' | 'access' = 'date';
+  selectedCourseIds: Set<string> = new Set();
+  showCoursePreview: boolean = false;
+  previewCourse: Course | null = null;
 
   courses: Course[] = [
     {
@@ -112,7 +121,8 @@ export class AdminDashboardComponent {
       category: this.newCourse.category,
       description: this.newCourse.description,
       contents: [],
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     this.courses.push(course);
@@ -299,6 +309,143 @@ export class AdminDashboardComponent {
 
   changeUserFilter(category: string) {
     this.userCategoryFilter = category as 'thermo' | 'automatisme' | 'process' | 'all';
+  }
+
+  // Bibliotheque improvement methods
+  searchCourses(term: string): Course[] {
+    if (!term.trim()) {
+      return this.getFilteredAndSortedCourses();
+    }
+    const lowerTerm = term.toLowerCase();
+    return this.getFilteredAndSortedCourses().filter(course =>
+      course.title.toLowerCase().includes(lowerTerm) ||
+      course.description.toLowerCase().includes(lowerTerm)
+    );
+  }
+
+  getFilteredAndSortedCourses(): Course[] {
+    let filtered = this.courses;
+
+    // Sort by selected option
+    if (this.bibliothequeSort === 'date') {
+      filtered = filtered.sort((a, b) => (b.updatedAt || b.createdAt).getTime() - (a.updatedAt || a.createdAt).getTime());
+    } else if (this.bibliothequeSort === 'title') {
+      filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (this.bibliothequeSort === 'category') {
+      filtered = filtered.sort((a, b) => a.category.localeCompare(b.category));
+    } else if (this.bibliothequeSort === 'access') {
+      filtered = filtered.sort((a, b) => {
+        const aHasKey = a.accessKey ? 1 : 0;
+        const bHasKey = b.accessKey ? 1 : 0;
+        return bHasKey - aHasKey;
+      });
+    }
+
+    return filtered;
+  }
+
+  toggleCourseSelection(courseId: string) {
+    if (this.selectedCourseIds.has(courseId)) {
+      this.selectedCourseIds.delete(courseId);
+    } else {
+      this.selectedCourseIds.add(courseId);
+    }
+  }
+
+  selectAllCourses(checked: boolean) {
+    if (checked) {
+      this.courses.forEach(course => this.selectedCourseIds.add(course.id));
+    } else {
+      this.selectedCourseIds.clear();
+    }
+  }
+
+  deleteSelectedCourses() {
+    if (this.selectedCourseIds.size === 0) {
+      alert('Aucun cours sélectionné');
+      return;
+    }
+
+    if (confirm(`Êtes-vous sûr de vouloir supprimer ${this.selectedCourseIds.size} cours?`)) {
+      this.courses = this.courses.filter(c => !this.selectedCourseIds.has(c.id));
+      this.selectedCourseIds.clear();
+      alert(`${this.selectedCourseIds.size} cours supprimés`);
+    }
+  }
+
+  generateAccessKeysForSelected() {
+    let count = 0;
+    this.selectedCourseIds.forEach(courseId => {
+      const course = this.courses.find(c => c.id === courseId);
+      if (course && !course.accessKey) {
+        course.accessKey = this.generateRandomKey();
+        count++;
+      }
+    });
+    alert(`${count} clés d'accès générées`);
+  }
+
+  duplicateCourse(course: Course) {
+    const duplicated: Course = {
+      id: Date.now().toString(),
+      title: `${course.title} (Copie)`,
+      category: course.category,
+      description: course.description,
+      contents: course.contents.map(content => ({ ...content, id: Date.now().toString() })),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.courses.push(duplicated);
+    alert('Cours dupliqué avec succès!');
+  }
+
+  previewCourseDetails(course: Course) {
+    this.previewCourse = course;
+    this.showCoursePreview = true;
+  }
+
+  closePreview() {
+    this.showCoursePreview = false;
+    this.previewCourse = null;
+  }
+
+  getCourseStats(course: Course): { modules: number; totalDuration: string; accessStatus: string } {
+    const modules = course.contents.length;
+    const totalDuration = this.calculateTotalDuration(course);
+    const accessStatus = course.accessKey ? 'Actif' : 'Inactif';
+
+    return { modules, totalDuration, accessStatus };
+  }
+
+  private calculateTotalDuration(course: Course): string {
+    let totalMinutes = 0;
+
+    course.contents.forEach(content => {
+      if (content.duration) {
+        const match = content.duration.match(/\d+/);
+        if (match) {
+          totalMinutes += parseInt(match[0]);
+        }
+      }
+    });
+
+    if (totalMinutes === 0) return 'N/A';
+    if (totalMinutes < 60) return `${totalMinutes}m`;
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+
+  exportCoursesAsJson() {
+    const dataStr = JSON.stringify(this.courses, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `courses-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    alert('Courses exported successfully!');
   }
 
   toggleSidebar() {
