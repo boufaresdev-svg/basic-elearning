@@ -21,11 +21,18 @@ export interface Course {
   title: string;
   category: 'thermo' | 'automatisme' | 'process';
   description: string;
+  objectives?: string;
+  level?: string;
+  image?: string;
   contents: CourseContent[];
   accessKey?: string;
+  access_key?: string;
   createdAt?: Date | string;
+  created_at?: string;
   updatedAt?: Date | string;
+  updated_at?: string;
   totalDuration?: number;
+  total_duration?: number;
 }
 
 export interface UploadProgress {
@@ -86,7 +93,8 @@ export class AdminDashboardComponent {
     objectives: '',
     duration: '',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
-    image: null as File | null
+    image: null as File | null,
+    imagePreview: null as string | null
   };
 
   courseFormErrors: { [key: string]: string } = {};
@@ -113,23 +121,48 @@ export class AdminDashboardComponent {
       return;
     }
 
-    const course: Omit<Course, 'id'> = {
-      title: this.newCourse.title,
-      category: this.newCourse.category,
-      description: this.newCourse.description,
-      contents: []
-    };
+    // Show uploading message if there's an image
+    if (this.newCourse.image) {
+      alert('Upload de l\'image en cours...');
+    }
 
-    this.supabaseService.addCourse(course).subscribe({
-      next: (newCourse) => {
-        this.resetCourseForm();
-        alert('Cours créé avec succès!');
-      },
-      error: (err) => {
-        console.error('Error creating course:', err);
-        alert('Erreur lors de la création du cours');
-      }
-    });
+    // Upload image to Supabase Storage if present
+    const uploadImage = this.newCourse.image
+      ? this.supabaseService.uploadFile(
+          'formations',
+          `images/${Date.now()}_${this.newCourse.image.name}`,
+          this.newCourse.image
+        ).toPromise()
+      : Promise.resolve(undefined);
+
+    uploadImage
+      .then((imageUrl) => {
+        const course: Omit<Course, 'id'> = {
+          title: this.newCourse.title,
+          category: this.newCourse.category,
+          description: this.newCourse.description,
+          objectives: this.newCourse.objectives,
+          level: this.newCourse.level,
+          image: imageUrl,
+          contents: [],
+          total_duration: this.newCourse.duration ? parseInt(this.newCourse.duration) * 60 : undefined
+        };
+
+        this.supabaseService.addCourse(course).subscribe({
+          next: (newCourse) => {
+            this.resetCourseForm();
+            alert('Cours créé avec succès!');
+          },
+          error: (err) => {
+            console.error('Error creating course:', err);
+            alert('Erreur lors de la création du cours');
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('Image upload error:', err);
+        alert('Erreur lors de l\'upload de l\'image');
+      });
   }
 
   selectCourse(course: Course) {
@@ -339,7 +372,8 @@ export class AdminDashboardComponent {
       objectives: '',
       duration: '',
       level: 'beginner',
-      image: null
+      image: null,
+      imagePreview: null
     };
     this.courseFormErrors = {};
     this.showCourseFormPreview = false;
@@ -589,12 +623,19 @@ export class AdminDashboardComponent {
         return;
       }
       this.newCourse.image = file;
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.newCourse.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
       this.courseFormErrors['image'] = '';
     }
   }
 
   removeCourseImage() {
     this.newCourse.image = null;
+    this.newCourse.imagePreview = null;
   }
 
   toggleCoursePreview() {
