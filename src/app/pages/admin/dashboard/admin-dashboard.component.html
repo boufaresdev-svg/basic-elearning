@@ -290,7 +290,7 @@
                 </div>
 
                 <footer class="card-actions">
-                  @if (course.accessKey) {
+                  @if (course.accessKey || course.access_key) {
                     <button class="action-button primary">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <polygon points="5,3 19,12 5,21 5,3"></polygon>
@@ -507,7 +507,7 @@
                         <rect x="3" y="14" width="7" height="7"></rect>
                       </svg>
                     </button>
-                    @if (!course.accessKey) {
+                    @if (!course.accessKey && !course.access_key) {
                       <button
                         (click)="generateAccessKey(course)"
                         class="action-icon-btn generate"
@@ -520,7 +520,7 @@
                       </button>
                     } @else {
                       <button
-                        (click)="copyToClipboard(course.accessKey)"
+                        (click)="copyToClipboard(course.accessKey || course.access_key || '')"
                         class="action-icon-btn copy"
                         title="Copier clé">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -605,8 +605,8 @@
               }
               <div class="preview-item">
                 <strong>Statut d'accès:</strong>
-                @if (previewCourse.accessKey) {
-                  <span class="access-badge active">✓ Débloqué ({{ previewCourse.accessKey }})</span>
+                @if (previewCourse.accessKey || previewCourse.access_key) {
+                  <span class="access-badge active">✓ Débloqué ({{ previewCourse.accessKey || previewCourse.access_key }})</span>
                 } @else {
                   <span class="access-badge inactive">✗ Verrouillé</span>
                 }

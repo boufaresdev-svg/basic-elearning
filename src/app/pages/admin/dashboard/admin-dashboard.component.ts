@@ -308,9 +308,26 @@ export class AdminDashboardComponent {
 
   generateAccessKey(course: Course) {
     const key = this.generateRandomKey();
-    course.accessKey = key;
-    this.generatedKey = key;
-    alert(`Clé d'accès générée: ${key}`);
+
+    // Update in database
+    this.supabaseService.updateCourse(course.id, { access_key: key }).subscribe({
+      next: (updatedCourse) => {
+        if (updatedCourse.id) {
+          // Update local reference
+          const localCourse = this.courses.find(c => c.id === course.id);
+          if (localCourse) {
+            localCourse.accessKey = key;
+            localCourse.access_key = key;
+          }
+          this.generatedKey = key;
+          alert(`Clé d'accès générée: ${key}`);
+        }
+      },
+      error: (err) => {
+        console.error('Error generating access key:', err);
+        alert('Erreur lors de la génération de la clé');
+      }
+    });
   }
 
   private generateRandomKey(): string {
@@ -396,7 +413,8 @@ export class AdminDashboardComponent {
   }
 
   getAccessKeyClass(course: Course): string {
-    return course.accessKey ? 'active' : 'inactive';
+    const hasKey = course.accessKey || course.access_key;
+    return hasKey ? 'active' : 'inactive';
   }
 
   getFilteredCoursesForUser(): Course[] {
@@ -502,15 +520,46 @@ export class AdminDashboardComponent {
   }
 
   generateAccessKeysForSelected() {
+    if (this.selectedCourseIds.size === 0) {
+      alert('Aucun cours sélectionné');
+      return;
+    }
+
     let count = 0;
+    const updatePromises: Promise<any>[] = [];
+
     this.selectedCourseIds.forEach(courseId => {
       const course = this.courses.find(c => c.id === courseId);
-      if (course && !course.accessKey) {
-        course.accessKey = this.generateRandomKey();
-        count++;
+      if (course && (!course.accessKey && !course.access_key)) {
+        const key = this.generateRandomKey();
+
+        // Update in database
+        const updatePromise = this.supabaseService.updateCourse(courseId, { access_key: key }).toPromise()
+          .then((updatedCourse) => {
+            if (updatedCourse?.id) {
+              course.accessKey = key;
+              course.access_key = key;
+              count++;
+            }
+          })
+          .catch((err) => {
+            console.error(`Error updating course ${courseId}:`, err);
+          });
+
+        updatePromises.push(updatePromise);
       }
     });
-    alert(`${count} clés d'accès générées`);
+
+    // Wait for all updates to complete
+    Promise.all(updatePromises).then(() => {
+      if (count > 0) {
+        alert(`${count} clé(s) d'accès générée(s) et enregistrée(s)`);
+      } else {
+        alert('Tous les cours sélectionnés ont déjà des clés d\'accès');
+      }
+    }).catch(() => {
+      alert('Certaines clés n\'ont pas pu être générées');
+    });
   }
 
   duplicateCourse(course: Course) {
