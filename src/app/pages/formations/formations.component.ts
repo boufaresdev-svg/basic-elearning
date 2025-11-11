@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { SupabaseService, Course } from '../../services/supabase.service';
 import { takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
@@ -7,7 +8,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'app-formations',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './formations.component.html',
   styleUrl: './formations.component.css'
 })

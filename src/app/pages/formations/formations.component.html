@@ -123,7 +123,7 @@
                   }
                 </span>
                 @if (course.access_key) {
-                  <a href="/formations/{{ course.id }}" class="btn btn-primary btn-sm">Accéder au cours</a>
+                  <a [routerLink]="['/course', course.id]" class="btn btn-primary btn-sm">Accéder au cours</a>
                 } @else {
                   <a href="javascript:void(0)" class="btn btn-secondary btn-sm">S'inscrire à la liste d'attente</a>
                 }

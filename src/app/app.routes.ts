@@ -23,6 +23,11 @@ export const routes: Routes = [
     title: 'Admin - SMS2I'
   },
   {
+    path: 'course/:id',
+    loadComponent: () => import('./pages/course/course.component').then(m => m.CourseComponent),
+    title: 'Cours - SMS2I'
+  },
+  {
     path: '**',
     redirectTo: ''
   }
