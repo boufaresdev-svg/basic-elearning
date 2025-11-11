@@ -147,18 +147,70 @@ export class AdminDashboardComponent {
       return;
     }
 
-    const content: CourseContent = {
-      id: Date.now().toString(),
-      title: this.newContent.title,
-      description: this.newContent.description,
-      duration: this.newContent.duration,
-      videoUrl: this.newContent.videoFile ? URL.createObjectURL(this.newContent.videoFile) : undefined,
-      pdfUrl: this.newContent.pdfFile ? URL.createObjectURL(this.newContent.pdfFile) : undefined
-    };
+    const contentId = Date.now().toString();
 
-    this.selectedCourse.contents.push(content);
-    this.resetContentForm();
-    alert('Contenu ajouté au cours!');
+    // Show uploading message
+    alert('Upload en cours...');
+
+    // Upload files to Supabase Storage if present
+    const uploadTasks: any[] = [];
+
+    if (this.newContent.videoFile) {
+      const videoPath = `videos/${contentId}_${this.newContent.videoFile.name}`;
+      uploadTasks.push(
+        this.supabaseService.uploadFile('formations', videoPath, this.newContent.videoFile).toPromise()
+      );
+    }
+
+    if (this.newContent.pdfFile) {
+      const pdfPath = `pdfs/${contentId}_${this.newContent.pdfFile.name}`;
+      uploadTasks.push(
+        this.supabaseService.uploadFile('formations', pdfPath, this.newContent.pdfFile).toPromise()
+      );
+    }
+
+    // Wait for all uploads to complete
+    Promise.all(uploadTasks)
+      .then((uploadedUrls) => {
+        let videoUrl: string | undefined;
+        let pdfUrl: string | undefined;
+
+        if (this.newContent.videoFile) {
+          videoUrl = uploadedUrls.shift();
+        }
+        if (this.newContent.pdfFile) {
+          pdfUrl = uploadedUrls.shift();
+        }
+
+        const content: CourseContent = {
+          id: contentId,
+          title: this.newContent.title,
+          description: this.newContent.description,
+          duration: this.newContent.duration,
+          videoUrl: videoUrl,
+          pdfUrl: pdfUrl
+        };
+
+        // Add content to course via Supabase
+        this.supabaseService.addContentToCourse(this.selectedCourse!.id, content).subscribe({
+          next: (updatedCourse) => {
+            // Update local reference (cast to local Course type)
+            if (updatedCourse.id) {
+              this.selectedCourse = updatedCourse as Course;
+            }
+            this.resetContentForm();
+            alert('Contenu ajouté au cours avec succès!');
+          },
+          error: (err) => {
+            console.error('Error adding content:', err);
+            alert('Erreur lors de l\'ajout du contenu');
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('Upload error:', err);
+        alert('Erreur lors de l\'upload des fichiers');
+      });
   }
 
   onVideoSelected(event: any) {
@@ -244,18 +296,38 @@ export class AdminDashboardComponent {
   }
 
   deleteContent(courseId: string, contentId: string) {
-    const course = this.courses.find(c => c.id === courseId);
-    if (course) {
-      course.contents = course.contents.filter(c => c.id !== contentId);
-      alert('Contenu supprimé');
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce module?')) {
+      this.supabaseService.deleteContent(courseId, contentId).subscribe({
+        next: (updatedCourse) => {
+          if (this.selectedCourse && this.selectedCourse.id === courseId && updatedCourse.id) {
+            this.selectedCourse = updatedCourse as Course;
+          }
+          alert('Contenu supprimé avec succès');
+        },
+        error: (err) => {
+          console.error('Error deleting content:', err);
+          alert('Erreur lors de la suppression du contenu');
+        }
+      });
     }
   }
 
   deleteCourse(courseId: string) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce cours?')) {
-      this.courses = this.courses.filter(c => c.id !== courseId);
-      this.selectedCourse = null;
-      alert('Cours supprimé');
+      this.supabaseService.deleteCourse(courseId).subscribe({
+        next: (success) => {
+          if (success) {
+            if (this.selectedCourse?.id === courseId) {
+              this.selectedCourse = null;
+            }
+            alert('Cours supprimé avec succès');
+          }
+        },
+        error: (err) => {
+          console.error('Error deleting course:', err);
+          alert('Erreur lors de la suppression du cours');
+        }
+      });
     }
   }
 
