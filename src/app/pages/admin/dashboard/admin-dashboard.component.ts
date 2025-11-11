@@ -47,6 +47,10 @@ export class AdminDashboardComponent {
   showCoursePreview: boolean = false;
   previewCourse: Course | null = null;
 
+  // Editor improvements
+  editorTab: 'add' | 'view' = 'add';
+  Object = Object;
+
   courses: Course[] = [
     {
       id: '1',
