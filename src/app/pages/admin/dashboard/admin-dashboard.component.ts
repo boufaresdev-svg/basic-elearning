@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SupabaseService, Course as SupabaseCourse, CourseContent as SupabaseCourseContent } from '../../../services/supabase.service';
+import { takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 export interface CourseContent {
   id: string;
@@ -20,8 +23,8 @@ export interface Course {
   description: string;
   contents: CourseContent[];
   accessKey?: string;
-  createdAt: Date;
-  updatedAt?: Date;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
   totalDuration?: number;
 }
 
@@ -51,40 +54,24 @@ export class AdminDashboardComponent {
   editorTab: 'add' | 'view' = 'add';
   Object = Object;
 
-  courses: Course[] = [
-    {
-      id: '1',
-      title: 'Thermodynamique Basique',
-      category: 'thermo',
-      description: 'Formation de base en thermodynamique et système de refroidissement',
-      contents: [
-        {
-          id: 'c1',
-          title: 'Introduction',
-          description: 'Introduction aux concepts fondamentaux',
-          duration: '45 min'
-        }
-      ],
-      accessKey: 'THERMO2024BASIC',
-      createdAt: new Date()
-    },
-    {
-      id: '2',
-      title: 'Automatisme Avancé',
-      category: 'automatisme',
-      description: 'Techniques avancées en automatisation industrielle',
-      contents: [],
-      createdAt: new Date()
-    },
-    {
-      id: '3',
-      title: 'Processus Production',
-      category: 'process',
-      description: 'Optimisation des processus de production',
-      contents: [],
-      createdAt: new Date()
-    }
-  ];
+  courses: Course[] = [];
+  private destroy$ = new Subject<void>();
+
+  constructor(private supabaseService: SupabaseService) {}
+
+  ngOnInit() {
+    this.supabaseService.courses$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((courses) => {
+        // Filter courses to ensure they have an id (type narrowing)
+        this.courses = courses.filter((c): c is Course & { id: string } => c.id !== undefined) as Course[];
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   categoryOptions = [
     { value: 'thermo', label: 'Formations Thermo Fromage' },
@@ -126,19 +113,23 @@ export class AdminDashboardComponent {
       return;
     }
 
-    const course: Course = {
-      id: Date.now().toString(),
+    const course: Omit<Course, 'id'> = {
       title: this.newCourse.title,
       category: this.newCourse.category,
       description: this.newCourse.description,
-      contents: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      contents: []
     };
 
-    this.courses.push(course);
-    this.resetCourseForm();
-    alert('Cours créé avec succès!');
+    this.supabaseService.addCourse(course).subscribe({
+      next: (newCourse) => {
+        this.resetCourseForm();
+        alert('Cours créé avec succès!');
+      },
+      error: (err) => {
+        console.error('Error creating course:', err);
+        alert('Erreur lors de la création du cours');
+      }
+    });
   }
 
   selectCourse(course: Course) {
@@ -345,7 +336,11 @@ export class AdminDashboardComponent {
 
     // Sort by selected option
     if (this.bibliothequeSort === 'date') {
-      filtered = filtered.sort((a, b) => (b.updatedAt || b.createdAt).getTime() - (a.updatedAt || a.createdAt).getTime());
+      filtered = filtered.sort((a, b) => {
+        const dateA = new Date((b.updatedAt || b.createdAt) || '').getTime();
+        const dateB = new Date((a.updatedAt || a.createdAt) || '').getTime();
+        return dateA - dateB;
+      });
     } else if (this.bibliothequeSort === 'title') {
       filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (this.bibliothequeSort === 'category') {
@@ -371,7 +366,9 @@ export class AdminDashboardComponent {
 
   selectAllCourses(checked: boolean) {
     if (checked) {
-      this.courses.forEach(course => this.selectedCourseIds.add(course.id));
+      this.courses.forEach(course => {
+        if (course.id) this.selectedCourseIds.add(course.id);
+      });
     } else {
       this.selectedCourseIds.clear();
     }
@@ -384,9 +381,17 @@ export class AdminDashboardComponent {
     }
 
     if (confirm(`Êtes-vous sûr de vouloir supprimer ${this.selectedCourseIds.size} cours?`)) {
-      this.courses = this.courses.filter(c => !this.selectedCourseIds.has(c.id));
-      this.selectedCourseIds.clear();
-      alert(`${this.selectedCourseIds.size} cours supprimés`);
+      const idsToDelete = Array.from(this.selectedCourseIds);
+      this.supabaseService.deleteMultipleCourses(idsToDelete).subscribe({
+        next: () => {
+          this.selectedCourseIds.clear();
+          alert(`${idsToDelete.length} cours supprimés`);
+        },
+        error: (err) => {
+          console.error('Error deleting courses:', err);
+          alert('Erreur lors de la suppression');
+        }
+      });
     }
   }
 
