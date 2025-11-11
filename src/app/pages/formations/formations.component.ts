@@ -1,16 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface Formation {
-  id: number;
-  title: string;
-  description: string;
-  duration: string;
-  level: string;
-  modalities: string[];
-  price: string;
-  icon: string;
-}
+import { SupabaseService, Course } from '../../services/supabase.service';
+import { takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-formations',
@@ -19,80 +11,69 @@ interface Formation {
   templateUrl: './formations.component.html',
   styleUrl: './formations.component.css'
 })
-export class FormationsComponent {
-  formations: Formation[] = [
-    {
-      id: 1,
-      title: 'Fondamentaux de l\'Automatisme',
-      description: 'Maîtrisez les concepts fondamentaux de l\'automatisme industriel, des automates programmables aux systèmes de contrôle.',
-      duration: '5 jours',
-      level: 'Débutant',
-      modalities: ['Sur site', 'Inter-entreprises', 'En ligne'],
-      price: 'Nous consulter',
-      icon: 'automation'
-    },
-    {
-      id: 2,
-      title: 'SIEMENS S7-1200/1500 Avancé',
-      description: 'Formation complète sur les automates SIEMENS S7-1200 et S7-1500, la programmation STEP 7 et les techniques avancées.',
-      duration: '7 jours',
-      level: 'Intermédiaire',
-      modalities: ['Sur site', 'Intra-entreprise'],
-      price: 'Nous consulter',
-      icon: 'siemens'
-    },
-    {
-      id: 3,
-      title: 'Supervision Industrielle avec SCADA',
-      description: 'Apprenez à concevoir et configurer des systèmes SCADA pour la supervision des processus industriels.',
-      duration: '5 jours',
-      level: 'Intermédiaire',
-      modalities: ['Sur site', 'Inter-entreprises', 'En ligne'],
-      price: 'Nous consulter',
-      icon: 'scada'
-    },
-    {
-      id: 4,
-      title: 'HMI et Interfaces Homme-Machine',
-      description: 'Développez des interfaces HMI efficaces pour la supervision et le contrôle des systèmes industriels.',
-      duration: '4 jours',
-      level: 'Intermédiaire',
-      modalities: ['Sur site', 'En ligne'],
-      price: 'Nous consulter',
-      icon: 'hmi'
-    },
-    {
-      id: 5,
-      title: 'Réseaux Industriels et Protocoles',
-      description: 'Maîtrisez les protocoles industriels PROFIBUS, PROFINET, Modbus et les réseaux Ethernet industriels.',
-      duration: '4 jours',
-      level: 'Avancé',
-      modalities: ['Sur site', 'Intra-entreprise'],
-      price: 'Nous consulter',
-      icon: 'network'
-    },
-    {
-      id: 6,
-      title: 'Sécurité Industrielle et Cybersécurité',
-      description: 'Protégez vos installations industrielles contre les menaces de cybersécurité et mettez en place les bonnes pratiques.',
-      duration: '3 jours',
-      level: 'Avancé',
-      modalities: ['Sur site', 'En ligne'],
-      price: 'Nous consulter',
-      icon: 'security'
-    }
+export class FormationsComponent implements OnInit, OnDestroy {
+  courses: Course[] = [];
+  selectedCategory: 'thermo' | 'automatisme' | 'process' | '' = '';
+  private destroy$ = new Subject<void>();
+
+  categoryOptions = [
+    { value: '', label: 'Toutes les formations', icon: 'all' },
+    { value: 'thermo', label: 'Formations Thermo Fromage', icon: 'thermo' },
+    { value: 'automatisme', label: 'Formations Automatisme', icon: 'automatisme' },
+    { value: 'process', label: 'Formations Process', icon: 'process' }
   ];
 
-  selectedModality: string = '';
+  constructor(private supabaseService: SupabaseService) {}
 
-  filterByModality(modality: string) {
-    this.selectedModality = this.selectedModality === modality ? '' : modality;
+  ngOnInit() {
+    // Subscribe to courses from Supabase
+    this.supabaseService.courses$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((courses) => {
+        this.courses = courses.filter((c): c is Course & { id: string } => c.id !== undefined) as Course[];
+      });
   }
 
-  getFilteredFormations() {
-    if (!this.selectedModality) {
-      return this.formations;
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  filterByCategory(category: string) {
+    const validCategory = category as 'thermo' | 'automatisme' | 'process' | '';
+    this.selectedCategory = this.selectedCategory === validCategory ? '' : validCategory;
+  }
+
+  getFilteredCourses() {
+    if (!this.selectedCategory) {
+      return this.courses;
     }
-    return this.formations.filter(f => f.modalities.includes(this.selectedModality));
+    return this.courses.filter(course => course.category === this.selectedCategory);
+  }
+
+  getCategoryIcon(category: string): string {
+    switch (category) {
+      case 'thermo': return 'thermo';
+      case 'automatisme': return 'automation';
+      case 'process': return 'process';
+      default: return 'course';
+    }
+  }
+
+  getCategoryLabel(category: string): string {
+    const cat = this.categoryOptions.find(c => c.value === category);
+    return cat ? cat.label : category;
+  }
+
+  formatDuration(totalDuration?: number): string {
+    if (!totalDuration) return 'Non spécifié';
+    if (totalDuration < 60) return `${totalDuration}m`;
+    const hours = Math.floor(totalDuration / 60);
+    const mins = totalDuration % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+
+  getLevel(course: Course): string {
+    return course.level || 'Tous niveaux';
   }
 }
