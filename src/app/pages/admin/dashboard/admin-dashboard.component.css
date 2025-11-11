@@ -2,7 +2,8 @@
 .dashboard-container {
   display: grid;
   grid-template-columns: 280px 1fr;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 80px);
+  margin-top: 80px;
   background: linear-gradient(135deg, #f6f9fc 0%, #e9f4ff 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
@@ -29,15 +30,14 @@
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: relative;
+  height: calc(100vh - 80px);
   overflow-y: auto;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.05),
     0 4px 32px rgba(0, 0, 0, 0.08),
     0 0 0 0.5px rgba(0, 0, 0, 0.02);
-  z-index: 100;
+  z-index: 99;
 }
 
 .sidebar-brand {
@@ -276,9 +276,9 @@
 
 /* Dashboard Main Content */
 .dashboard-main {
-  padding: 32px;
+  padding: 24px 32px;
   overflow-y: auto;
-  max-height: 100vh;
+  max-height: calc(100vh - 80px);
   position: relative;
 }
 
@@ -286,8 +286,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  margin-bottom: 24px;
+  margin-top: 8px;
+  padding-bottom: 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
