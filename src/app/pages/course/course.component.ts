@@ -104,18 +104,26 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   validateAccessKey() {
+    console.log('validateAccessKey called');
     if (!this.course || !this.accessKey.trim()) {
       this.errorMessage = 'Veuillez entrer une clé d\'accès';
       return;
     }
 
     const courseAccessKey = this.course.access_key;
+    console.log('Entered key:', this.accessKey.trim().toUpperCase());
+    console.log('Expected key:', courseAccessKey?.toUpperCase());
+    
     if (this.accessKey.trim().toUpperCase() === courseAccessKey?.toUpperCase()) {
+      console.log('Access key is valid! Granting access...');
       this.isAccessGranted = true;
       this.showAccessKeyInput = false;
       this.errorMessage = '';
       this.loadFirstModule();
+      console.log('After loadFirstModule - showVideo:', this.showVideo, 'showPdf:', this.showPdf);
+      this.cdr.detectChanges();
     } else {
+      console.log('Access key is invalid');
       this.errorMessage = 'Clé d\'accès invalide';
     }
   }
@@ -134,6 +142,8 @@ export class CourseComponent implements OnInit, OnDestroy {
 
     this.currentModuleIndex = index;
     this.currentModule = this.course.contents[index];
+    
+    console.log('Loading module:', this.currentModule);
 
     // Reset media display
     this.showVideo = false;
@@ -141,14 +151,33 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.currentVideoUrl = null;
     this.currentPdfUrl = null;
 
-    // Load media if available
-    if (this.currentModule.video_url) {
-      this.currentVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.currentModule.video_url);
+    // Load media if available - handle both snake_case and camelCase
+    const videoUrl = (this.currentModule as any).video_url || (this.currentModule as any).videoUrl;
+    const pdfUrl = (this.currentModule as any).pdf_url || (this.currentModule as any).pdfUrl;
+    
+    console.log('Video URL:', videoUrl);
+    console.log('PDF URL:', pdfUrl);
+
+    if (videoUrl) {
+      this.currentVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(videoUrl);
+      // Automatically show video if available
+      this.showVideo = true;
+      console.log('Video will be shown');
     }
 
-    if (this.currentModule.pdf_url) {
-      this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.currentModule.pdf_url);
+    if (pdfUrl) {
+      this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
+      // If no video, automatically show PDF
+      if (!videoUrl) {
+        this.showPdf = true;
+        console.log('PDF will be shown (no video)');
+      }
     }
+    
+    console.log('Final state - showVideo:', this.showVideo, 'showPdf:', this.showPdf);
+    
+    // Trigger change detection
+    this.cdr.detectChanges();
   }
 
   nextModule() {
