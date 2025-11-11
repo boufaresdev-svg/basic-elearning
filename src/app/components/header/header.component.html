@@ -1,0 +1,24 @@
+<header class="header">
+  <div class="container">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <a routerLink="/" class="logo">
+          <span class="logo-text">SMS2I</span>
+          <span class="logo-subtitle">Formation & Services Industriels</span>
+        </a>
+      </div>
+
+      <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="navbar-menu" [class.active]="isMenuOpen">
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Accueil</a></li>
+        <li><a routerLink="/formations" routerLinkActive="active" (click)="closeMenu()">Formations</a></li>
+        <li><a routerLink="/login" class="btn btn-primary btn-nav" (click)="closeMenu()">Connexion</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>

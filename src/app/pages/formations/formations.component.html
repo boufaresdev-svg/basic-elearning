@@ -1,0 +1,137 @@
+<div class="formations-wrapper">
+  <!-- Hero Section -->
+  <section class="hero-small">
+    <div class="container">
+      <h1>Nos Formations Certifiantes</h1>
+      <p>Des formations adaptées à votre niveau et vos besoins en automatisme et industriel</p>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="section filters-section">
+    <div class="container">
+      <h2 class="text-center">Filtrer par modalité</h2>
+      <div class="filter-buttons">
+        <button
+          class="filter-btn"
+          [class.active]="selectedModality === ''"
+          (click)="filterByModality('')">
+          Toutes
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedModality === 'Sur site'"
+          (click)="filterByModality('Sur site')">
+          Sur Site
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedModality === 'Inter-entreprises'"
+          (click)="filterByModality('Inter-entreprises')">
+          Inter-Entreprises
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedModality === 'Intra-entreprise'"
+          (click)="filterByModality('Intra-entreprise')">
+          Intra-Entreprise
+        </button>
+        <button
+          class="filter-btn"
+          [class.active]="selectedModality === 'En ligne'"
+          (click)="filterByModality('En ligne')">
+          En Ligne
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Formations Grid -->
+  <section class="section formations-list-section">
+    <div class="container">
+      <div class="formations-list">
+        @for (formation of getFilteredFormations(); track formation.id) {
+          <div class="formation-item card">
+            <div class="formation-item-header">
+              <div class="formation-icon">
+                @switch(formation.icon) {
+                  @case('automation') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
+                    </svg>
+                  }
+                  @case('siemens') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                    </svg>
+                  }
+                  @case('scada') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                  }
+                  @case('hmi') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                  }
+                  @case('network') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <path d="M12 1v22"></path>
+                      <path d="M1 12h22"></path>
+                      <path d="M4.22 4.22l15.56 15.56"></path>
+                      <path d="M19.78 4.22L4.22 19.78"></path>
+                    </svg>
+                  }
+                  @case('security') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                  }
+                }
+              </div>
+              <div class="formation-item-meta">
+                <span class="level" [class]="'level-' + formation.level.toLowerCase().replace(' ', '-')">
+                  {{ formation.level }}
+                </span>
+                <span class="duration">{{ formation.duration }}</span>
+              </div>
+            </div>
+
+            <h3>{{ formation.title }}</h3>
+            <p class="description">{{ formation.description }}</p>
+
+            <div class="modalities">
+              <strong>Modalités :</strong>
+              <div class="modality-tags">
+                @for (modality of formation.modalities; track modality) {
+                  <span class="tag">{{ modality }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="formation-footer">
+              <span class="price">{{ formation.price }}</span>
+              <a href="javascript:void(0)" class="btn btn-primary btn-sm">S'inscrire</a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section cta-section">
+    <div class="container">
+      <div class="cta-content text-center">
+        <h2>Besoin d'une Formation Sur Mesure ?</h2>
+        <p>Contactez-nous pour discuter d'une formation personnalisée adaptée à vos besoins spécifiques.</p>
+        <a href="javascript:void(0)" class="btn btn-primary btn-lg">Demander Une Formation Personnalisée</a>
+      </div>
+    </div>
+  </section>
+</div>
