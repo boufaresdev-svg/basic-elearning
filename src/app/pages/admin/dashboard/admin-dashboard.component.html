@@ -632,58 +632,288 @@
       }
     }
 
-    <!-- Tab: Créer un Cours -->
+    <!-- Tab: Créer un Nouveau Cours -->
     @if (activeTab === 'create') {
       <div class="tab-content">
         <div class="content-header">
           <h1>Créer un Nouveau Cours</h1>
-          <p>Remplissez le formulaire pour créer un cours de formation</p>
+          <p>Concevez une nouvelle expérience d'apprentissage pour vos étudiants</p>
         </div>
 
-        <div class="form-section card">
-          <form (ngSubmit)="createCourse()" class="admin-form">
-            <div class="form-group">
-              <label for="course-title">Titre du Cours *</label>
-              <input
-                type="text"
-                id="course-title"
-                [(ngModel)]="newCourse.title"
-                name="title"
-                placeholder="Ex: Automatisme Avancé"
-                required
-              />
-            </div>
+        <div class="create-course-container">
+          <!-- Left Side: Form -->
+          <div class="form-column">
+            <div class="form-section card">
+              <!-- Progress Bar -->
+              <div class="form-progress">
+                <div class="progress-header">
+                  <span>Progression du formulaire</span>
+                  <span class="progress-percentage">{{ getCourseFormProgress() }}%</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" [style.width.%]="getCourseFormProgress()"></div>
+                </div>
+              </div>
 
-            <div class="form-group">
-              <label for="course-category">Catégorie *</label>
-              <select
-                id="course-category"
-                [(ngModel)]="newCourse.category"
-                name="category"
-                required
-              >
-                @for (cat of categoryOptions; track cat.value) {
-                  <option [value]="cat.value">{{ cat.label }}</option>
-                }
-              </select>
-            </div>
+              <form (ngSubmit)="submitCourseForm()" class="admin-form improved-form">
+                <!-- Titre -->
+                <div class="form-group">
+                  <label for="course-title">
+                    <span class="label-text">Titre du Cours</span>
+                    <span class="required">*</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      type="text"
+                      id="course-title"
+                      [(ngModel)]="newCourse.title"
+                      name="title"
+                      placeholder="Ex: Automatisme Avancé - Niveau 2"
+                      maxlength="100"
+                      class="form-input"
+                      [class.error]="courseFormErrors['title']"
+                    />
+                    <span class="char-count">{{ newCourse.title.length }}/100</span>
+                  </div>
+                  @if (courseFormErrors['title']) {
+                    <span class="error-message">{{ courseFormErrors['title'] }}</span>
+                  }
+                </div>
 
-            <div class="form-group">
-              <label for="course-description">Description *</label>
-              <textarea
-                id="course-description"
-                [(ngModel)]="newCourse.description"
-                name="description"
-                placeholder="Décrivez le contenu et les objectifs du cours"
-                rows="4"
-                required
-              ></textarea>
-            </div>
+                <!-- Catégorie -->
+                <div class="form-group">
+                  <label for="course-category">
+                    <span class="label-text">Catégorie</span>
+                    <span class="required">*</span>
+                  </label>
+                  <select
+                    id="course-category"
+                    [(ngModel)]="newCourse.category"
+                    name="category"
+                    class="form-select"
+                    required
+                  >
+                    @for (cat of categoryOptions; track cat.value) {
+                      <option [value]="cat.value">{{ cat.label }}</option>
+                    }
+                  </select>
+                  <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
 
-            <button type="submit" class="btn btn-primary btn-lg">
-              Créer le Cours
-            </button>
-          </form>
+                <!-- Niveau de difficulté -->
+                <div class="form-group">
+                  <label for="course-level">
+                    <span class="label-text">Niveau de Difficulté</span>
+                  </label>
+                  <div class="level-options">
+                    <button
+                      type="button"
+                      (click)="newCourse.level = 'beginner'"
+                      [class.active]="newCourse.level === 'beginner'"
+                      class="level-btn beginner">
+                      <span class="level-icon">🟢</span>
+                      <span>Débutant</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="newCourse.level = 'intermediate'"
+                      [class.active]="newCourse.level === 'intermediate'"
+                      class="level-btn intermediate">
+                      <span class="level-icon">🟡</span>
+                      <span>Intermédiaire</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="newCourse.level = 'advanced'"
+                      [class.active]="newCourse.level === 'advanced'"
+                      class="level-btn advanced">
+                      <span class="level-icon">🔴</span>
+                      <span>Avancé</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                  <label for="course-description">
+                    <span class="label-text">Description</span>
+                    <span class="required">*</span>
+                  </label>
+                  <div class="textarea-wrapper">
+                    <textarea
+                      id="course-description"
+                      [(ngModel)]="newCourse.description"
+                      name="description"
+                      placeholder="Décrivez le contenu, les objectifs et les compétences acquises..."
+                      rows="5"
+                      maxlength="1000"
+                      class="form-textarea"
+                      [class.error]="courseFormErrors['description']"
+                    ></textarea>
+                    <span class="char-count">{{ newCourse.description.length }}/1000</span>
+                  </div>
+                  @if (courseFormErrors['description']) {
+                    <span class="error-message">{{ courseFormErrors['description'] }}</span>
+                  }
+                </div>
+
+                <!-- Objectifs d'apprentissage -->
+                <div class="form-group">
+                  <label for="course-objectives">
+                    <span class="label-text">Objectifs d'Apprentissage</span>
+                  </label>
+                  <div class="textarea-wrapper">
+                    <textarea
+                      id="course-objectives"
+                      [(ngModel)]="newCourse.objectives"
+                      name="objectives"
+                      placeholder="- L'étudiant sera capable de...&#10;- Comprendre les concepts de...&#10;- Appliquer les techniques de..."
+                      rows="4"
+                      maxlength="500"
+                      class="form-textarea"
+                    ></textarea>
+                    <span class="char-count">{{ newCourse.objectives.length }}/500</span>
+                  </div>
+                </div>
+
+                <!-- Durée -->
+                <div class="form-group">
+                  <label for="course-duration">
+                    <span class="label-text">Durée Estimée (en heures)</span>
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      type="number"
+                      id="course-duration"
+                      [(ngModel)]="newCourse.duration"
+                      name="duration"
+                      placeholder="Ex: 10"
+                      min="0.5"
+                      step="0.5"
+                      class="form-input"
+                    />
+                    <span class="unit">heures</span>
+                  </div>
+                  @if (courseFormErrors['duration']) {
+                    <span class="error-message">{{ courseFormErrors['duration'] }}</span>
+                  }
+                </div>
+
+                <!-- Image de couverture -->
+                <div class="form-group">
+                  <label for="course-image">
+                    <span class="label-text">Image de Couverture</span>
+                  </label>
+                  @if (newCourse.image) {
+                    <div class="image-preview">
+                      <div class="preview-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <span>{{ newCourse.image.name }}</span>
+                      </div>
+                      <button type="button" (click)="removeCourseImage()" class="remove-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="file-upload-area">
+                      <input
+                        type="file"
+                        id="course-image"
+                        (change)="onCourseImageSelected($event)"
+                        accept="image/*"
+                        class="file-input"
+                      />
+                      <div class="upload-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17,8 12,3 7,8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>Glissez votre image ici ou <span class="link">cliquez pour parcourir</span></p>
+                        <span class="hint">PNG, JPG jusqu'à 5MB</span>
+                      </div>
+                    </div>
+                  }
+                  @if (courseFormErrors['image']) {
+                    <span class="error-message">{{ courseFormErrors['image'] }}</span>
+                  }
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                  <button type="button" (click)="toggleCoursePreview()" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Aperçu
+                  </button>
+                  <button type="submit" class="btn btn-primary btn-lg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    Créer le Cours
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Side: Preview -->
+          @if (showCourseFormPreview) {
+            <div class="preview-column">
+              <div class="preview-card card">
+                <h3 class="preview-title">Aperçu du Cours</h3>
+
+                <div class="preview-content-box">
+                  <!-- Course Card Preview -->
+                  <div class="course-preview-card">
+                    <div class="preview-header">
+                      <div class="preview-badge" [class]="newCourse.level">
+                        @if (newCourse.level === 'beginner') { 🟢 Débutant }
+                        @if (newCourse.level === 'intermediate') { 🟡 Intermédiaire }
+                        @if (newCourse.level === 'advanced') { 🔴 Avancé }
+                      </div>
+                      <span class="preview-category">{{ getCategoryLabel(newCourse.category) }}</span>
+                    </div>
+
+                    <h4 class="preview-course-title">{{ newCourse.title || 'Titre du cours...' }}</h4>
+
+                    <p class="preview-description">
+                      {{ newCourse.description || 'La description apparaîtra ici...' }}
+                    </p>
+
+                    @if (newCourse.duration) {
+                      <div class="preview-info-item">
+                        <span class="info-icon">⏱️</span>
+                        <span>{{ newCourse.duration }} heures</span>
+                      </div>
+                    }
+
+                    @if (newCourse.objectives) {
+                      <div class="preview-objectives">
+                        <strong>Objectifs:</strong>
+                        <p>{{ newCourse.objectives }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <button type="button" (click)="toggleCoursePreview()" class="btn btn-secondary btn-block">
+                  Fermer l'Aperçu
+                </button>
+              </div>
+            </div>
+          }
         </div>
       </div>
     }
@@ -842,19 +1072,6 @@
             <p>Créez d'abord un cours avant d'ajouter du contenu</p>
           </div>
         }
-      </div>
-    }
-
-    <!-- Placeholder for other tabs -->
-    @if (activeTab === 'create') {
-      <div class="content-body">
-        <h2>Création de cours - Interface moderne à développer</h2>
-      </div>
-    }
-
-    @if (activeTab === 'manage') {
-      <div class="content-body">
-        <h2>Gestion de contenu - Interface moderne à développer</h2>
       </div>
     }
 

@@ -91,8 +91,15 @@ export class AdminDashboardComponent {
   newCourse = {
     title: '',
     category: 'automatisme' as 'thermo' | 'automatisme' | 'process',
-    description: ''
+    description: '',
+    objectives: '',
+    duration: '',
+    level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
+    image: null as File | null
   };
+
+  courseFormErrors: { [key: string]: string } = {};
+  showCourseFormPreview: boolean = false;
 
   newContent = {
     title: '',
@@ -261,8 +268,14 @@ export class AdminDashboardComponent {
     this.newCourse = {
       title: '',
       category: 'automatisme',
-      description: ''
+      description: '',
+      objectives: '',
+      duration: '',
+      level: 'beginner',
+      image: null
     };
+    this.courseFormErrors = {};
+    this.showCourseFormPreview = false;
   }
 
   resetContentForm() {
@@ -450,5 +463,80 @@ export class AdminDashboardComponent {
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  // Nouveau Cours improvements
+  validateCourseForm(): boolean {
+    this.courseFormErrors = {};
+
+    if (!this.newCourse.title.trim()) {
+      this.courseFormErrors['title'] = 'Le titre du cours est requis';
+    } else if (this.newCourse.title.length < 5) {
+      this.courseFormErrors['title'] = 'Le titre doit contenir au moins 5 caractères';
+    } else if (this.newCourse.title.length > 100) {
+      this.courseFormErrors['title'] = 'Le titre ne doit pas dépasser 100 caractères';
+    }
+
+    if (!this.newCourse.description.trim()) {
+      this.courseFormErrors['description'] = 'La description est requise';
+    } else if (this.newCourse.description.length < 10) {
+      this.courseFormErrors['description'] = 'La description doit contenir au moins 10 caractères';
+    } else if (this.newCourse.description.length > 1000) {
+      this.courseFormErrors['description'] = 'La description ne doit pas dépasser 1000 caractères';
+    }
+
+    if (this.newCourse.objectives && this.newCourse.objectives.length > 500) {
+      this.courseFormErrors['objectives'] = 'Les objectifs ne doivent pas dépasser 500 caractères';
+    }
+
+    if (this.newCourse.duration && isNaN(Number(this.newCourse.duration))) {
+      this.courseFormErrors['duration'] = 'La durée doit être un nombre valide';
+    }
+
+    return Object.keys(this.courseFormErrors).length === 0;
+  }
+
+  onCourseImageSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        this.courseFormErrors['image'] = 'Veuillez sélectionner une image valide';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        this.courseFormErrors['image'] = 'L\'image ne doit pas dépasser 5MB';
+        return;
+      }
+      this.newCourse.image = file;
+      this.courseFormErrors['image'] = '';
+    }
+  }
+
+  removeCourseImage() {
+    this.newCourse.image = null;
+  }
+
+  toggleCoursePreview() {
+    if (this.validateCourseForm()) {
+      this.showCourseFormPreview = !this.showCourseFormPreview;
+    }
+  }
+
+  submitCourseForm() {
+    if (this.validateCourseForm()) {
+      this.createCourse();
+    }
+  }
+
+  getCourseFormProgress(): number {
+    let filled = 0;
+    if (this.newCourse.title.trim()) filled++;
+    if (this.newCourse.category) filled++;
+    if (this.newCourse.description.trim()) filled++;
+    if (this.newCourse.objectives?.trim()) filled++;
+    if (this.newCourse.duration) filled++;
+    if (this.newCourse.image) filled++;
+
+    return Math.round((filled / 6) * 100);
   }
 }
