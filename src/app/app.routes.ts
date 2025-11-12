@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -20,7 +21,8 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./pages/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
-    title: 'Admin - SMS2I'
+    title: 'Admin - SMS2I',
+    canActivate: [authGuard]
   },
   {
     path: 'course/:id',

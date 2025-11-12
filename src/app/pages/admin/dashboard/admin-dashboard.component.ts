@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { QuillEditorComponent } from 'ngx-quill';
 import 'quill';
 import { SupabaseService, Course as SupabaseCourse, CourseContent as SupabaseCourseContent } from '../../../services/supabase.service';
@@ -146,7 +147,10 @@ quillModules = {
   courses: Course[] = [];
   private destroy$ = new Subject<void>();
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.supabaseService.courses$
@@ -155,6 +159,17 @@ quillModules = {
         // Filter courses to ensure they have an id (type narrowing)
         this.courses = courses.filter((c): c is Course & { id: string } => c.id !== undefined) as Course[];
       });
+  }
+
+  // Logout functionality
+  logout() {
+    // Clear authentication state
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('adminEmail');
+    localStorage.removeItem('rememberMe');
+
+    // Redirect to login page
+    this.router.navigate(['/login']);
   }
 
   // Insert table functionality
