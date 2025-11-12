@@ -642,7 +642,7 @@ quillModules = {
   startEditingContent(content: CourseContent) {
     this.isEditingContent = true;
     this.editingContent = content;
-    
+
     // Populate the form with existing content data
     this.newContent = {
       title: content.title,
@@ -658,7 +658,7 @@ quillModules = {
       prerequisites: content.prerequisites || [],
       learningObjectives: content.learningObjectives || []
     };
-    
+
     // Switch to add tab to show the form
     this.editorTab = 'add';
   }
@@ -679,7 +679,7 @@ quillModules = {
     const trimmedTitle = this.newContent.title?.trim();
     const trimmedDescription = this.newContent.description?.trim();
     const descriptionText = trimmedDescription?.replace(/<[^>]*>/g, '').trim();
-    
+
     if (!trimmedTitle || !descriptionText) {
       alert('Veuillez remplir les champs requis (titre et description)');
       return;

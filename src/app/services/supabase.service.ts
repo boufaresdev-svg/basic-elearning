@@ -358,7 +358,7 @@ export class SupabaseService {
       if (fetchError) throw fetchError;
       if (!course) throw new Error('Course not found');
 
-      const updatedContents = (course as Course).contents.map(c => 
+      const updatedContents = (course as Course).contents.map(c =>
         c.id === updatedContent.id ? updatedContent : c
       );
 
@@ -387,7 +387,7 @@ export class SupabaseService {
         if (index !== -1) {
           const updatedCourse = {
             ...currentCourses[index],
-            contents: currentCourses[index].contents.map(c => 
+            contents: currentCourses[index].contents.map(c =>
               c.id === updatedContent.id ? updatedContent : c
             ),
             updated_at: new Date().toISOString()
