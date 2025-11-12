@@ -1,13 +1,5 @@
 <div class="course-container">
-  <!-- Debug Info -->
-  <div style="position: fixed; top: 0; left: 0; background: white; padding: 10px; z-index: 9999; font-size: 12px;">
-    <div>isLoading: {{ isLoading }}</div>
-    <div>course: {{ course ? 'exists' : 'null' }}</div>
-    <div>showAccessKeyInput: {{ showAccessKeyInput }}</div>
-    <div>isAccessGranted: {{ isAccessGranted }}</div>
-  </div>
 
-  <!-- Loading State -->
   @if (isLoading) {
     <div class="loading-container">
       <div class="loading-spinner">
@@ -173,7 +165,7 @@
           <!-- Module Header -->
           <div class="module-header">
             <h2>{{ currentModule.title }}</h2>
-            <p class="module-description">{{ currentModule.description }}</p>
+            <div class="module-description" [innerHTML]="currentModule.description"></div>
 
             <!-- Media Controls -->
             <div class="media-controls">
@@ -248,7 +240,7 @@
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                   </svg>
                   <h3>Contenu du Module</h3>
-                  <p>{{ currentModule.description }}</p>
+                  <div [innerHTML]="currentModule.description"></div>
 
                   @if (currentModule.video_url || currentModule.pdf_url) {
                     <p class="media-hint">

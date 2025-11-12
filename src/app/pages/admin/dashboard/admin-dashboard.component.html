@@ -1448,7 +1448,7 @@
                               }
                             </div>
 
-                            <p class="content-description">{{ content.description }}</p>
+                            <div class="content-description" [innerHTML]="content.description"></div>
 
                             <div class="content-badges">
                               @if (content.duration) {

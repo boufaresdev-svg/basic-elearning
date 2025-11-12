@@ -759,3 +759,145 @@
     height: 400px;
   }
 }
+
+/* Rich Text Content Display Styles */
+.module-description {
+  line-height: 1.6;
+}
+
+.module-description h1,
+.module-description h2,
+.module-description h3,
+.module-description h4,
+.module-description h5,
+.module-description h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.module-description h1 { font-size: 1.8em; }
+.module-description h2 { font-size: 1.5em; }
+.module-description h3 { font-size: 1.3em; }
+.module-description h4 { font-size: 1.1em; }
+
+.module-description p {
+  margin-bottom: 1em;
+}
+
+.module-description ul,
+.module-description ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.module-description li {
+  margin-bottom: 0.5em;
+}
+
+.module-description strong {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.module-description em {
+  font-style: italic;
+}
+
+.module-description code {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e11d48;
+}
+
+.module-description pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.module-description blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1em;
+  margin-left: 0;
+  margin-bottom: 1em;
+  color: #64748b;
+  font-style: italic;
+  background: #f8fafc;
+  padding: 1em;
+  border-radius: 4px;
+}
+
+.module-description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1em 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.module-description a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.module-description a:hover {
+  text-decoration: underline;
+}
+
+.module-description table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.module-description table th,
+.module-description table td {
+  border: 1px solid #e2e8f0;
+  padding: 0.75em;
+  text-align: left;
+}
+
+.module-description table th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.module-description table tr:hover {
+  background: #f8fafc;
+}
+
+/* Content placeholder also needs rich text support */
+.content-placeholder div {
+  line-height: 1.6;
+}
+
+.content-placeholder h1,
+.content-placeholder h2,
+.content-placeholder h3 {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.content-placeholder ul,
+.content-placeholder ol {
+  margin-left: 1.5em;
+  text-align: left;
+}
+
+.content-placeholder strong {
+  font-weight: 600;
+}
