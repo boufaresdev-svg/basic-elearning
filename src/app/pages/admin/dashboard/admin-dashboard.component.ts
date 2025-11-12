@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { QuillEditorComponent } from 'ngx-quill';
+import 'quill';
 import { SupabaseService, Course as SupabaseCourse, CourseContent as SupabaseCourseContent } from '../../../services/supabase.service';
 import { takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
@@ -14,6 +16,13 @@ export interface CourseContent {
   pdfUrl?: string;
   pdfFile?: File;
   duration?: string;
+  contentType?: 'lesson' | 'exercise' | 'quiz' | 'resource';
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  tags?: string[];
+  prerequisites?: string[];
+  learningObjectives?: string[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface Course {
@@ -42,13 +51,51 @@ export interface UploadProgress {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, QuillEditorComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent {
   activeTab: 'courses' | 'create' | 'manage' | 'user' = 'user';
   userCategoryFilter: 'thermo' | 'automatisme' | 'process' | 'all' = 'all';
+
+quillModules = {
+  toolbar: [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote', 'code-block'],
+    [{ 'header': 1 }, { 'header': 2 }],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    [{ 'script': 'sub'}, { 'script': 'super' }],
+    [{ 'indent': '-1'}, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'align': [] }],
+    ['clean'],
+    ['link', 'image', 'video'],
+    ['formula']
+  ]
+};
+  // Advanced editor configuration
+  advancedQuillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      ['blockquote', 'code-block'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video'],
+      ['clean']
+    ]
+  };
 
   // Bibliotheque improvements
   bibliothequeSearchTerm: string = '';
@@ -73,6 +120,75 @@ export class AdminDashboardComponent {
         // Filter courses to ensure they have an id (type narrowing)
         this.courses = courses.filter((c): c is Course & { id: string } => c.id !== undefined) as Course[];
       });
+  }
+
+  // Insert table functionality
+  insertTable() {
+    // This will be handled by the better-table module
+    console.log('Insert table functionality');
+  }
+
+  // Content management methods
+  setContentType(type: 'lesson' | 'exercise' | 'quiz' | 'resource') {
+    this.newContent.contentType = type;
+  }
+
+  addTag(tag: string) {
+    if (tag.trim() && !this.newContent.tags.includes(tag.trim())) {
+      this.newContent.tags.push(tag.trim());
+    }
+  }
+
+  removeTag(index: number) {
+    this.newContent.tags.splice(index, 1);
+  }
+
+  addLearningObjective(objective: string) {
+    if (objective.trim() && !this.newContent.learningObjectives.includes(objective.trim())) {
+      this.newContent.learningObjectives.push(objective.trim());
+    }
+  }
+
+  removeLearningObjective(index: number) {
+    this.newContent.learningObjectives.splice(index, 1);
+  }
+
+  addPrerequisite(prerequisite: string) {
+    if (prerequisite.trim() && !this.newContent.prerequisites.includes(prerequisite.trim())) {
+      this.newContent.prerequisites.push(prerequisite.trim());
+    }
+  }
+
+  removePrerequisite(index: number) {
+    this.newContent.prerequisites.splice(index, 1);
+  }
+
+  setDifficulty(difficulty: 'beginner' | 'intermediate' | 'advanced') {
+    this.newContent.difficulty = difficulty;
+  }
+
+  // Handle Quill editor content change
+  onDescriptionChange(event: any) {
+    console.log('Quill content changed:', event);
+    if (event.html !== undefined) {
+      this.newContent.description = event.html;
+      console.log('Description updated to:', this.newContent.description);
+    }
+  }
+
+  // Enhanced content validation
+  validateAdvancedContent(): boolean {
+    if (!this.newContent.title.trim() || !this.newContent.description.trim()) {
+      alert('Veuillez remplir le titre et la description du module');
+      return false;
+    }
+
+    if (this.newContent.description.length < 50) {
+      alert('La description doit contenir au moins 50 caractères pour être informative');
+      return false;
+    }
+
+    return true;
   }
 
   ngOnDestroy() {
@@ -107,10 +223,17 @@ export class AdminDashboardComponent {
     pdfFile: null as File | null,
     duration: '',
     videoPreview: null as string | null,
-    pdfPreview: null as string | null
+    pdfPreview: null as string | null,
+    contentType: 'lesson' as 'lesson' | 'exercise' | 'quiz' | 'resource',
+    tags: [] as string[],
+    difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
+    prerequisites: [] as string[],
+    learningObjectives: [] as string[]
   };
 
   selectedCourse: Course | null = null;
+  isEditingCourse: boolean = false;
+  editingCourseData: any = null;
   generatedKey: string = '';
   uploadProgress: UploadProgress = {};
   sidebarCollapsed: boolean = false;
@@ -167,6 +290,125 @@ export class AdminDashboardComponent {
 
   selectCourse(course: Course) {
     this.selectedCourse = course;
+    this.activeTab = 'manage';
+  }
+
+  startEditingCourse() {
+    if (!this.selectedCourse) {
+      alert('Veuillez sélectionner un cours');
+      return;
+    }
+
+    this.editingCourseData = {
+      title: this.selectedCourse.title,
+      description: this.selectedCourse.description,
+      category: this.selectedCourse.category,
+      objectives: this.selectedCourse.objectives || '',
+      level: this.selectedCourse.level || 'beginner',
+      image: null as File | null,
+      imagePreview: this.selectedCourse.image || null
+    };
+    this.isEditingCourse = true;
+  }
+
+  cancelEditingCourse() {
+    this.isEditingCourse = false;
+    this.editingCourseData = null;
+  }
+
+  saveEditedCourse() {
+    if (!this.selectedCourse || !this.editingCourseData) {
+      alert('Erreur: Aucun cours sélectionné');
+      return;
+    }
+
+    if (!this.editingCourseData.title.trim() || !this.editingCourseData.description.trim()) {
+      alert('Veuillez remplir les champs requis');
+      return;
+    }
+
+    // If there's a new image file, upload it first
+    if (this.editingCourseData.image) {
+      alert('Upload de l\'image en cours...');
+      this.supabaseService.uploadFile(
+        'formations',
+        `images/${Date.now()}_${this.editingCourseData.image.name}`,
+        this.editingCourseData.image
+      ).toPromise()
+        .then((imageUrl) => {
+          this.performCourseUpdate(imageUrl);
+        })
+        .catch((err) => {
+          console.error('Image upload error:', err);
+          alert('Erreur lors de l\'upload de l\'image');
+        });
+    } else {
+      this.performCourseUpdate(this.editingCourseData.imagePreview);
+    }
+  }
+
+  private performCourseUpdate(imageUrl: string | null | undefined) {
+    const updateData: any = {
+      title: this.editingCourseData.title,
+      description: this.editingCourseData.description,
+      category: this.editingCourseData.category,
+      objectives: this.editingCourseData.objectives
+    };
+
+    if (this.editingCourseData.level) {
+      updateData.level = this.editingCourseData.level;
+    }
+
+    if (imageUrl) {
+      updateData.image = imageUrl;
+    }
+
+    this.supabaseService.updateCourse(this.selectedCourse!.id, updateData).subscribe({
+      next: (updatedCourse) => {
+        if (updatedCourse.id) {
+          // Update selected course with new data
+          this.selectedCourse = updatedCourse as Course;
+          // Update in courses list
+          const index = this.courses.findIndex(c => c.id === updatedCourse.id);
+          if (index >= 0) {
+            this.courses[index] = updatedCourse as Course;
+          }
+          this.isEditingCourse = false;
+          this.editingCourseData = null;
+          alert('Cours mis à jour avec succès!');
+        }
+      },
+      error: (err) => {
+        console.error('Error updating course:', err);
+        alert('Erreur lors de la mise à jour du cours');
+      }
+    });
+  }
+
+  onEditCourseImageSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner une image valide');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('L\'image ne doit pas dépasser 5MB');
+        return;
+      }
+      this.editingCourseData.image = file;
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.editingCourseData.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeEditCourseImage() {
+    this.editingCourseData.image = null;
+    this.editingCourseData.imagePreview = null;
   }
 
   addContentToCourse() {
@@ -175,8 +417,35 @@ export class AdminDashboardComponent {
       return;
     }
 
-    if (!this.newContent.title || !this.newContent.description) {
-      alert('Veuillez remplir les champs requis');
+    // Debug logging
+    console.log('newContent:', this.newContent);
+    console.log('title:', this.newContent.title);
+    console.log('description:', this.newContent.description);
+
+    // Trim and validate title
+    const trimmedTitle = this.newContent.title?.trim();
+
+    // For description, check if it's not empty and not just HTML tags
+    const trimmedDescription = this.newContent.description?.trim();
+
+    // Strip HTML tags to check if there's actual content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = trimmedDescription || '';
+    const descriptionText = tempDiv.textContent || tempDiv.innerText || '';
+    const cleanDescriptionText = descriptionText.trim();
+
+    console.log('trimmedTitle:', trimmedTitle);
+    console.log('trimmedDescription:', trimmedDescription);
+    console.log('descriptionText:', descriptionText);
+    console.log('cleanDescriptionText:', cleanDescriptionText);
+
+    if (!trimmedTitle) {
+      alert('Veuillez remplir le titre');
+      return;
+    }
+
+    if (!cleanDescriptionText) {
+      alert('Veuillez remplir la description');
       return;
     }
 
@@ -217,11 +486,17 @@ export class AdminDashboardComponent {
 
         const content: CourseContent = {
           id: contentId,
-          title: this.newContent.title,
-          description: this.newContent.description,
+          title: trimmedTitle,
+          description: trimmedDescription,
           duration: this.newContent.duration,
           videoUrl: videoUrl,
-          pdfUrl: pdfUrl
+          pdfUrl: pdfUrl,
+          contentType: this.newContent.contentType,
+          difficulty: this.newContent.difficulty,
+          tags: this.newContent.tags,
+          prerequisites: this.newContent.prerequisites,
+          learningObjectives: this.newContent.learningObjectives,
+          createdAt: new Date().toISOString()
         };
 
         // Add content to course via Supabase
@@ -404,7 +679,12 @@ export class AdminDashboardComponent {
       pdfFile: null,
       duration: '',
       videoPreview: null,
-      pdfPreview: null
+      pdfPreview: null,
+      contentType: 'lesson' as 'lesson' | 'exercise' | 'quiz' | 'resource',
+      tags: [] as string[],
+      difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
+      prerequisites: [] as string[],
+      learningObjectives: [] as string[]
     };
   }
 
