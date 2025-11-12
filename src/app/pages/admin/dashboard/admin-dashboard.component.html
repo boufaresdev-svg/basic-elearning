@@ -1163,15 +1163,20 @@
                   </button>
                 </div>
 
-                <!-- Tab: Add Content Form -->
+                <!-- Tab: Add/Edit Content Form -->
                 @if (editorTab === 'add') {
                   <div class="editor-content-form card">
                     <div class="form-header">
-                      <h3>Ajouter un Nouveau Module</h3>
-                      <p>Enrichissez votre cours avec un nouveau module multimédia</p>
+                      @if (isEditingContent) {
+                        <h3>✏️ Modifier le Module</h3>
+                        <p>Mettez à jour le contenu de ce module</p>
+                      } @else {
+                        <h3>Ajouter un Nouveau Module</h3>
+                        <p>Enrichissez votre cours avec un nouveau module multimédia</p>
+                      }
                     </div>
 
-                    <form (ngSubmit)="addContentToCourse()" class="editor-form">
+                    <form (ngSubmit)="isEditingContent ? updateContent() : addContentToCourse()" class="editor-form">
                       <!-- Module Title -->
                       <div class="form-group">
                         <label for="content-title">
@@ -1408,19 +1413,35 @@
 
                       <!-- Form Actions -->
                       <div class="form-actions">
-                        <button type="reset" class="btn btn-secondary" (click)="resetContentForm()">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <path d="M20.49 15a9 9 0 1 1-2-8.83"></path>
-                          </svg>
-                          Réinitialiser
-                        </button>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 5v14M5 12h14"></path>
-                          </svg>
-                          Ajouter le Module
-                        </button>
+                        @if (isEditingContent) {
+                          <button type="button" class="btn btn-secondary" (click)="cancelEditingContent()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Annuler
+                          </button>
+                          <button type="submit" class="btn btn-primary btn-lg">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Mettre à Jour
+                          </button>
+                        } @else {
+                          <button type="reset" class="btn btn-secondary" (click)="resetContentForm()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <polyline points="23 4 23 10 17 10"></polyline>
+                              <path d="M20.49 15a9 9 0 1 1-2-8.83"></path>
+                            </svg>
+                            Réinitialiser
+                          </button>
+                          <button type="submit" class="btn btn-primary btn-lg">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path d="M12 5v14M5 12h14"></path>
+                            </svg>
+                            Ajouter le Module
+                          </button>
+                        }
                       </div>
                     </form>
                   </div>
@@ -1436,15 +1457,26 @@
                             <div class="content-card-header">
                               <h4>{{ content.title }}</h4>
                               @if (selectedCourse) {
-                                <button
-                                  (click)="deleteContent(selectedCourse!.id, content.id)"
-                                  class="delete-btn"
-                                  title="Supprimer ce module">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                  </svg>
-                                </button>
+                                <div class="card-actions">
+                                  <button
+                                    (click)="startEditingContent(content)"
+                                    class="edit-btn"
+                                    title="Modifier ce module">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                  </button>
+                                  <button
+                                    (click)="deleteContent(selectedCourse!.id, content.id)"
+                                    class="delete-btn"
+                                    title="Supprimer ce module">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                      <polyline points="3 6 5 6 21 6"></polyline>
+                                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                  </button>
+                                </div>
                               }
                             </div>
 

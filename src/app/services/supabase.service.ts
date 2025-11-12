@@ -347,6 +347,62 @@ export class SupabaseService {
     );
   }
 
+  updateContent(courseId: string, updatedContent: CourseContent): Observable<Course> {
+    return from((async () => {
+      const { data: course, error: fetchError } = await this.supabase
+        .from('formations')
+        .select('*')
+        .eq('id', courseId)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!course) throw new Error('Course not found');
+
+      const updatedContents = (course as Course).contents.map(c => 
+        c.id === updatedContent.id ? updatedContent : c
+      );
+
+      const { data, error } = await this.supabase
+        .from('formations')
+        .update({ contents: updatedContents, updated_at: new Date().toISOString() })
+        .eq('id', courseId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updatedCourse = data as Course;
+      const currentCourses = this.coursesSubject.value;
+      const updatedCourses = currentCourses.map(c => c.id === courseId ? updatedCourse : c);
+      this.coursesSubject.next(updatedCourses);
+      this.saveToLocalStorage(updatedCourses);
+
+      return updatedCourse;
+    })()).pipe(
+      catchError(err => {
+        console.error('Supabase updateContent error, using localStorage:', err);
+        // Fallback
+        const currentCourses = this.coursesSubject.value;
+        const index = currentCourses.findIndex(c => c.id === courseId);
+        if (index !== -1) {
+          const updatedCourse = {
+            ...currentCourses[index],
+            contents: currentCourses[index].contents.map(c => 
+              c.id === updatedContent.id ? updatedContent : c
+            ),
+            updated_at: new Date().toISOString()
+          };
+          const updatedCourses = [...currentCourses];
+          updatedCourses[index] = updatedCourse;
+          this.coursesSubject.next(updatedCourses);
+          this.saveToLocalStorage(updatedCourses);
+          return of(updatedCourse);
+        }
+        return of({} as Course);
+      })
+    );
+  }
+
   // Upload file to Supabase Storage
   uploadFile(bucket: string, path: string, file: File): Observable<string> {
     return from(

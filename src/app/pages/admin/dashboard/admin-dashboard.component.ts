@@ -234,6 +234,8 @@ quillModules = {
   selectedCourse: Course | null = null;
   isEditingCourse: boolean = false;
   editingCourseData: any = null;
+  isEditingContent: boolean = false;
+  editingContent: CourseContent | null = null;
   generatedKey: string = '';
   uploadProgress: UploadProgress = {};
   sidebarCollapsed: boolean = false;
@@ -635,6 +637,120 @@ quillModules = {
         }
       });
     }
+  }
+
+  startEditingContent(content: CourseContent) {
+    this.isEditingContent = true;
+    this.editingContent = content;
+    
+    // Populate the form with existing content data
+    this.newContent = {
+      title: content.title,
+      description: content.description,
+      videoFile: null,
+      pdfFile: null,
+      duration: content.duration || '',
+      videoPreview: content.videoUrl || null,
+      pdfPreview: content.pdfUrl || null,
+      contentType: content.contentType || 'lesson',
+      tags: content.tags || [],
+      difficulty: content.difficulty || 'beginner',
+      prerequisites: content.prerequisites || [],
+      learningObjectives: content.learningObjectives || []
+    };
+    
+    // Switch to add tab to show the form
+    this.editorTab = 'add';
+  }
+
+  cancelEditingContent() {
+    this.isEditingContent = false;
+    this.editingContent = null;
+    this.resetContentForm();
+  }
+
+  updateContent() {
+    if (!this.selectedCourse || !this.editingContent) {
+      alert('Erreur: Aucun contenu sélectionné');
+      return;
+    }
+
+    // Validate
+    const trimmedTitle = this.newContent.title?.trim();
+    const trimmedDescription = this.newContent.description?.trim();
+    const descriptionText = trimmedDescription?.replace(/<[^>]*>/g, '').trim();
+    
+    if (!trimmedTitle || !descriptionText) {
+      alert('Veuillez remplir les champs requis (titre et description)');
+      return;
+    }
+
+    alert('Mise à jour en cours...');
+
+    // Handle file uploads if new files were selected
+    const uploadTasks: any[] = [];
+    const contentId = this.editingContent.id;
+
+    if (this.newContent.videoFile) {
+      const videoPath = `videos/${contentId}_${this.newContent.videoFile.name}`;
+      uploadTasks.push(
+        this.supabaseService.uploadFile('formations', videoPath, this.newContent.videoFile).toPromise()
+      );
+    }
+
+    if (this.newContent.pdfFile) {
+      const pdfPath = `pdfs/${contentId}_${this.newContent.pdfFile.name}`;
+      uploadTasks.push(
+        this.supabaseService.uploadFile('formations', pdfPath, this.newContent.pdfFile).toPromise()
+      );
+    }
+
+    Promise.all(uploadTasks)
+      .then((uploadedUrls) => {
+        let videoUrl: string | undefined = this.editingContent!.videoUrl;
+        let pdfUrl: string | undefined = this.editingContent!.pdfUrl;
+
+        if (this.newContent.videoFile) {
+          videoUrl = uploadedUrls.shift();
+        }
+        if (this.newContent.pdfFile) {
+          pdfUrl = uploadedUrls.shift();
+        }
+
+        const updatedContent: CourseContent = {
+          id: contentId,
+          title: trimmedTitle,
+          description: trimmedDescription,
+          duration: this.newContent.duration,
+          videoUrl: videoUrl,
+          pdfUrl: pdfUrl,
+          contentType: this.newContent.contentType,
+          difficulty: this.newContent.difficulty,
+          tags: this.newContent.tags,
+          prerequisites: this.newContent.prerequisites,
+          learningObjectives: this.newContent.learningObjectives,
+          updatedAt: new Date().toISOString()
+        };
+
+        // Update content via service
+        this.supabaseService.updateContent(this.selectedCourse!.id, updatedContent).subscribe({
+          next: (updatedCourse) => {
+            if (updatedCourse.id) {
+              this.selectedCourse = updatedCourse as Course;
+            }
+            this.cancelEditingContent();
+            alert('Contenu mis à jour avec succès!');
+          },
+          error: (err) => {
+            console.error('Error updating content:', err);
+            alert('Erreur lors de la mise à jour du contenu');
+          }
+        });
+      })
+      .catch((err) => {
+        console.error('Upload error:', err);
+        alert('Erreur lors de l\'upload des fichiers');
+      });
   }
 
   deleteCourse(courseId: string) {
