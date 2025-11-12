@@ -54,78 +54,116 @@
   <section class="section formations-list-section">
     <div class="container">
       @if (getFilteredCourses().length > 0) {
-        <div class="formations-list">
+        <div class="formations-grid">
           @for (course of getFilteredCourses(); track course.id) {
-            <div class="formation-item card">
-              <div class="formation-item-header">
-                <div class="formation-icon">
-                  @switch(getCategoryIcon(course.category)) {
-                    @case('automation') {
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1"></circle>
-                        <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
-                      </svg>
+            <div class="formation-card">
+              <!-- Course Image -->
+              <div class="formation-image">
+                @if (course.image) {
+                  <img [src]="course.image" [alt]="course.title" />
+                } @else {
+                  <div class="formation-placeholder">
+                    @switch(getCategoryIcon(course.category)) {
+                      @case('automation') {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="1"></circle>
+                          <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
+                        </svg>
+                      }
+                      @case('thermo') {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                      }
+                      @case('process') {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
+                        </svg>
+                      }
+                      @default {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                      }
                     }
-                    @case('thermo') {
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                      </svg>
-                    }
-                    @case('process') {
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
-                      </svg>
-                    }
-                    @default {
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                      </svg>
-                    }
-                  }
-                </div>
-                <div class="formation-item-meta">
-                  <span class="level" [class]="'level-' + getLevel(course).toLowerCase().replace(' ', '-')">
-                    {{ getLevel(course) }}
-                  </span>
-                  <span class="duration">{{ formatDuration(course.total_duration) }}</span>
-                </div>
-              </div>
-
-              <h3>{{ course.title }}</h3>
-              <p class="description">{{ course.description }}</p>
-
-              <div class="course-info">
-                <div class="info-section">
-                  <strong>Catégorie :</strong>
-                  <span class="category-tag" [class]="course.category">
-                    {{ getCategoryLabel(course.category) }}
-                  </span>
-                </div>
-                @if (course.objectives) {
-                  <div class="info-section">
-                    <strong>Objectifs :</strong>
-                    <p class="objectives">{{ course.objectives }}</p>
                   </div>
                 }
-                <div class="info-section">
-                  <strong>Modules :</strong>
-                  <span class="modules-count">{{ course.contents.length }} module(s)</span>
+                <div class="formation-overlay">
+                  <span class="category-badge" [class]="'category-' + course.category">
+                    {{ getCategoryLabel(course.category) }}
+                  </span>
+                  @if (course.access_key) {
+                    <span class="access-badge available">✓ Disponible</span>
+                  } @else {
+                    <span class="access-badge coming-soon">Bientôt</span>
+                  }
                 </div>
               </div>
 
+              <!-- Course Content -->
+              <div class="formation-content">
+                <div class="formation-header">
+                  <h3 class="formation-title">{{ course.title }}</h3>
+                  <div class="formation-meta">
+                    <span class="level-badge" [class]="'level-' + getLevel(course).toLowerCase().replace(' ', '-')">
+                      {{ getLevel(course) }}
+                    </span>
+                    <span class="duration-badge">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                      {{ formatDuration(course.total_duration) }}
+                    </span>
+                  </div>
+                </div>
+
+                <p class="formation-description">{{ course.description }}</p>
+
+                @if (course.objectives) {
+                  <div class="objectives-section">
+                    <h4>Objectifs</h4>
+                    <p class="objectives-text">{{ course.objectives }}</p>
+                  </div>
+                }
+
+                <div class="course-stats">
+                  <div class="stat-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    <span>{{ course.contents.length }} module{{ course.contents.length > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>{{ getLevel(course) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Course Footer -->
               <div class="formation-footer">
-                <span class="price">
-                  @if (course.access_key) {
-                    <span class="access-status available">✓ Disponible</span>
-                  } @else {
-                    <span class="access-status coming-soon">Bientôt disponible</span>
-                  }
-                </span>
                 @if (course.access_key) {
-                  <a [routerLink]="['/course', course.id]" class="btn btn-primary btn-sm">Accéder au cours</a>
+                  <a [routerLink]="['/course', course.id]" class="btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Commencer le cours
+                  </a>
                 } @else {
-                  <a href="javascript:void(0)" class="btn btn-secondary btn-sm">S'inscrire à la liste d'attente</a>
+                  <button class="btn-secondary" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                    Bientôt disponible
+                  </button>
                 }
               </div>
             </div>
