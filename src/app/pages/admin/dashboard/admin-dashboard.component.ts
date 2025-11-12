@@ -11,9 +11,9 @@ export interface CourseContent {
   id: string;
   title: string;
   description: string;
-  videoUrl?: string;
+  video_url?: string;
   videoFile?: File;
-  pdfUrl?: string;
+  pdf_url?: string;
   pdfFile?: File;
   duration?: string;
   contentType?: 'lesson' | 'exercise' | 'quiz' | 'resource';
@@ -23,6 +23,41 @@ export interface CourseContent {
   learningObjectives?: string[];
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  quiz?: Quiz;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  type: 'multiple-choice' | 'true-false' | 'short-answer';
+  options?: string[];
+  correctAnswer: string | string[];
+  explanation?: string;
+  points: number;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+  passingScore: number;
+  timeLimit?: number; // in minutes
+  allowRetake: boolean;
+  showCorrectAnswers: boolean;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  userId: string;
+  answers: { [questionId: string]: string | string[] };
+  score: number;
+  totalPoints: number;
+  passed: boolean;
+  startedAt: Date | string;
+  completedAt: Date | string;
+  timeSpent: number; // in seconds
 }
 
 export interface Course {
@@ -176,6 +211,112 @@ quillModules = {
     }
   }
 
+  // Quiz Management Methods
+  toggleQuizCreation() {
+    this.isCreatingQuiz = !this.isCreatingQuiz;
+    if (this.isCreatingQuiz) {
+      this.resetQuizForm();
+    }
+  }
+
+  addQuestionToQuiz() {
+    if (!this.newQuestion.question.trim()) {
+      alert('Veuillez saisir la question');
+      return;
+    }
+
+    if (this.newQuestion.type === 'multiple-choice' && this.newQuestion.options) {
+      const validOptions = this.newQuestion.options.filter(opt => opt.trim());
+      if (validOptions.length < 2) {
+        alert('Veuillez fournir au moins 2 options pour une question à choix multiples');
+        return;
+      }
+    }
+
+    if (!this.newQuestion.correctAnswer ||
+        (Array.isArray(this.newQuestion.correctAnswer) && this.newQuestion.correctAnswer.length === 0)) {
+      alert('Veuillez spécifier la bonne réponse');
+      return;
+    }
+
+    const question: QuizQuestion = {
+      id: Date.now().toString(),
+      question: this.newQuestion.question,
+      type: this.newQuestion.type,
+      options: this.newQuestion.type === 'multiple-choice' ?
+        this.newQuestion.options?.filter(opt => opt.trim()) : undefined,
+      correctAnswer: this.newQuestion.correctAnswer,
+      explanation: this.newQuestion.explanation,
+      points: this.newQuestion.points
+    };
+
+    this.newQuiz.questions.push(question);
+    this.resetQuestionForm();
+  }
+
+  removeQuestionFromQuiz(index: number) {
+    this.newQuiz.questions.splice(index, 1);
+  }
+
+  addOptionToQuestion() {
+    if (this.newQuestion.options) {
+      this.newQuestion.options.push('');
+    }
+  }
+
+  removeOptionFromQuestion(index: number) {
+    if (this.newQuestion.options && this.newQuestion.options.length > 2) {
+      this.newQuestion.options.splice(index, 1);
+    }
+  }
+
+  saveQuizToContent() {
+    if (!this.newQuiz.title.trim()) {
+      alert('Veuillez donner un titre au quiz');
+      return;
+    }
+
+    if (this.newQuiz.questions.length === 0) {
+      alert('Veuillez ajouter au moins une question au quiz');
+      return;
+    }
+
+    this.newQuiz.id = Date.now().toString();
+
+    // Attach quiz to the current content being created
+    if (this.newContent.contentType === 'quiz') {
+      // The quiz will be saved when the content is added
+      this.isCreatingQuiz = false;
+      alert('Quiz créé avec succès! Maintenant, vous pouvez ajouter ce module au cours.');
+    }
+  }
+
+  resetQuizForm() {
+    this.newQuiz = {
+      id: '',
+      title: '',
+      description: '',
+      questions: [],
+      passingScore: 70,
+      timeLimit: 30,
+      allowRetake: true,
+      showCorrectAnswers: true
+    };
+    this.resetQuestionForm();
+  }
+
+  resetQuestionForm() {
+    this.newQuestion = {
+      id: '',
+      question: '',
+      type: 'multiple-choice',
+      options: ['', '', '', ''],
+      correctAnswer: '',
+      explanation: '',
+      points: 1
+    };
+  }
+
   // Enhanced content validation
   validateAdvancedContent(): boolean {
     if (!this.newContent.title.trim() || !this.newContent.description.trim()) {
@@ -229,6 +370,29 @@ quillModules = {
     difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     prerequisites: [] as string[],
     learningObjectives: [] as string[]
+  };
+
+  // Quiz management
+  isCreatingQuiz: boolean = false;
+  newQuiz: Quiz = {
+    id: '',
+    title: '',
+    description: '',
+    questions: [],
+    passingScore: 70,
+    timeLimit: 30,
+    allowRetake: true,
+    showCorrectAnswers: true
+  };
+
+  newQuestion: QuizQuestion = {
+    id: '',
+    question: '',
+    type: 'multiple-choice',
+    options: ['', '', '', ''],
+    correctAnswer: '',
+    explanation: '',
+    points: 1
   };
 
   selectedCourse: Course | null = null;
@@ -491,15 +655,20 @@ quillModules = {
           title: trimmedTitle,
           description: trimmedDescription,
           duration: this.newContent.duration,
-          videoUrl: videoUrl,
-          pdfUrl: pdfUrl,
+          video_url: videoUrl,
+          pdf_url: pdfUrl,
           contentType: this.newContent.contentType,
           difficulty: this.newContent.difficulty,
           tags: this.newContent.tags,
           prerequisites: this.newContent.prerequisites,
           learningObjectives: this.newContent.learningObjectives,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          quiz: this.newContent.contentType === 'quiz' && this.newQuiz.questions.length > 0 ?
+            { ...this.newQuiz, id: contentId } : undefined
         };
+
+        console.log('Content to save:', content);
+        console.log('Quiz data:', content.quiz);
 
         // Add content to course via Supabase
         this.supabaseService.addContentToCourse(this.selectedCourse!.id, content).subscribe({
@@ -650,8 +819,8 @@ quillModules = {
       videoFile: null,
       pdfFile: null,
       duration: content.duration || '',
-      videoPreview: content.videoUrl || null,
-      pdfPreview: content.pdfUrl || null,
+      videoPreview: content.video_url || null,
+      pdfPreview: content.pdf_url || null,
       contentType: content.contentType || 'lesson',
       tags: content.tags || [],
       difficulty: content.difficulty || 'beginner',
@@ -707,8 +876,8 @@ quillModules = {
 
     Promise.all(uploadTasks)
       .then((uploadedUrls) => {
-        let videoUrl: string | undefined = this.editingContent!.videoUrl;
-        let pdfUrl: string | undefined = this.editingContent!.pdfUrl;
+        let videoUrl: string | undefined = this.editingContent!.video_url;
+        let pdfUrl: string | undefined = this.editingContent!.pdf_url;
 
         if (this.newContent.videoFile) {
           videoUrl = uploadedUrls.shift();
@@ -722,8 +891,8 @@ quillModules = {
           title: trimmedTitle,
           description: trimmedDescription,
           duration: this.newContent.duration,
-          videoUrl: videoUrl,
-          pdfUrl: pdfUrl,
+          video_url: videoUrl,
+          pdf_url: pdfUrl,
           contentType: this.newContent.contentType,
           difficulty: this.newContent.difficulty,
           tags: this.newContent.tags,
@@ -802,6 +971,8 @@ quillModules = {
       prerequisites: [] as string[],
       learningObjectives: [] as string[]
     };
+    this.resetQuizForm();
+    this.isCreatingQuiz = false;
   }
 
   getCoursesByCategory(category: string): Course[] {

@@ -167,6 +167,37 @@
             <h2>{{ currentModule.title }}</h2>
             <div class="module-description" [innerHTML]="currentModule.description"></div>
 
+            <!-- Content Type Badges -->
+            @if (currentModule.video_url || currentModule.pdf_url || currentModule.quiz) {
+              <div class="content-badges">
+                @if (currentModule.video_url) {
+                  <span class="content-badge video">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Vidéo disponible
+                  </span>
+                }
+                @if (currentModule.pdf_url) {
+                  <span class="content-badge pdf">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                      <polyline points="13 2 13 9 20 9"></polyline>
+                    </svg>
+                    Document PDF
+                  </span>
+                }
+                @if (currentModule.quiz) {
+                  <span class="content-badge quiz">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M9 11H3v2h6v-2zm12 0h-6v2h6v-2zm-3-7h-2V2h-4v2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H8V6h8v12z"></path>
+                    </svg>
+                    Quiz disponible
+                  </span>
+                }
+              </div>
+            }
+
             <!-- Media Controls -->
             <div class="media-controls">
               @if (currentModule.video_url) {
@@ -191,6 +222,17 @@
                     <polyline points="13 2 13 9 20 9"></polyline>
                   </svg>
                   Document PDF
+                </button>
+              }
+
+              @if (currentModule.quiz && !isQuizActive && !showQuizResults) {
+                <button
+                  (click)="startQuiz()"
+                  class="media-btn quiz-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 11H3v2h6v-2zm12 0h-6v2h6v-2zm-3-7h-2V2h-4v2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H8V6h8v12z"></path>
+                  </svg>
+                  Commencer le Quiz
                 </button>
               }
             </div>
@@ -232,7 +274,7 @@
             }
 
             <!-- Default Content (when no media is selected) -->
-            @if (!showVideo && !showPdf) {
+            @if (!showVideo && !showPdf && !isQuizActive && !showQuizResults) {
               <div class="default-content">
                 <div class="content-placeholder">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -242,12 +284,212 @@
                   <h3>Contenu du Module</h3>
                   <div [innerHTML]="currentModule.description"></div>
 
-                  @if (currentModule.video_url || currentModule.pdf_url) {
+                  @if (currentModule.video_url || currentModule.pdf_url || currentModule.quiz) {
                     <p class="media-hint">
-                      Utilisez les boutons ci-dessus pour accéder au contenu multimédia de ce module.
+                      Utilisez les boutons ci-dessus pour accéder au contenu de ce module.
                     </p>
                   } @else {
-                    <p class="no-media">Aucun contenu multimédia disponible pour ce module.</p>
+                    <p class="no-media">Aucun contenu disponible pour ce module.</p>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Quiz Active -->
+            @if (isQuizActive && currentQuiz) {
+              <div class="quiz-container">
+                <!-- Quiz Header -->
+                <div class="quiz-header">
+                  <div class="quiz-info">
+                    <h3>{{ currentQuiz.title }}</h3>
+                    <p>{{ currentQuiz.description }}</p>
+                    <div class="quiz-meta">
+                      <span class="quiz-meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        {{ currentQuiz.questions.length }} questions
+                      </span>
+                      @if (currentQuiz.timeLimit) {
+                        <span class="quiz-meta-item timer">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          Temps restant: {{ getQuizTimerDisplay() }}
+                        </span>
+                      }
+                      <span class="quiz-meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                        Score de passage: {{ currentQuiz.passingScore }}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quiz Questions -->
+                <div class="quiz-questions">
+                  @for (question of currentQuiz.questions; track question.id; let i = $index) {
+                    <div class="quiz-question-card">
+                      <div class="question-header">
+                        <span class="question-number">Question {{ i + 1 }}</span>
+                        <span class="question-points">{{ question.points }} points</span>
+                      </div>
+
+                      <h4 class="question-text">{{ question.question }}</h4>
+
+                      <!-- Multiple Choice -->
+                      @if (question.type === 'multiple-choice' && question.options) {
+                        <div class="question-options">
+                          @for (option of question.options; track option) {
+                            <label class="option-label">
+                              <input
+                                type="radio"
+                                [name]="'question-' + question.id"
+                                [value]="option"
+                                [checked]="isOptionSelected(question.id, option)"
+                                (change)="selectAnswer(question.id, option)"
+                              />
+                              <span>{{ option }}</span>
+                            </label>
+                          }
+                        </div>
+                      }
+
+                      <!-- True/False -->
+                      @if (question.type === 'true-false') {
+                        <div class="question-options">
+                          <label class="option-label">
+                            <input
+                              type="radio"
+                              [name]="'question-' + question.id"
+                              value="true"
+                              [checked]="isOptionSelected(question.id, 'true')"
+                              (change)="selectAnswer(question.id, 'true')"
+                            />
+                            <span>Vrai</span>
+                          </label>
+                          <label class="option-label">
+                            <input
+                              type="radio"
+                              [name]="'question-' + question.id"
+                              value="false"
+                              [checked]="isOptionSelected(question.id, 'false')"
+                              (change)="selectAnswer(question.id, 'false')"
+                            />
+                            <span>Faux</span>
+                          </label>
+                        </div>
+                      }
+
+                      <!-- Short Answer -->
+                      @if (question.type === 'short-answer') {
+                        <div class="question-input">
+                          <input
+                            type="text"
+                            class="form-input"
+                            placeholder="Votre réponse..."
+                            [(ngModel)]="quizAnswers[question.id]"
+                          />
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- Quiz Actions -->
+                <div class="quiz-actions">
+                  <button (click)="exitQuiz()" class="btn btn-secondary">
+                    Quitter
+                  </button>
+                  <button
+                    (click)="submitQuiz()"
+                    [disabled]="!canSubmitQuiz()"
+                    class="btn btn-primary">
+                    Soumettre le Quiz
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Quiz Results -->
+            @if (showQuizResults && currentQuiz) {
+              <div class="quiz-results">
+                <div class="results-header" [class.passed]="quizPassed" [class.failed]="!quizPassed">
+                  <div class="results-icon">
+                    @if (quizPassed) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                      </svg>
+                    }
+                  </div>
+                  <h3>{{ quizPassed ? 'Félicitations !' : 'Essayez encore' }}</h3>
+                  <p class="results-score">
+                    {{ quizScore }} / {{ quizTotalPoints }} points ({{ getQuizPercentage() }}%)
+                  </p>
+                  <p class="results-status">
+                    @if (quizPassed) {
+                      Vous avez réussi ce quiz avec succès !
+                    } @else {
+                      Vous avez besoin d'au moins {{ currentQuiz.passingScore }}% pour réussir.
+                    }
+                  </p>
+                </div>
+
+                <!-- Show Correct Answers (if enabled) -->
+                @if (currentQuiz.showCorrectAnswers) {
+                  <div class="results-details">
+                    <h4>Résultats Détaillés</h4>
+                    @for (question of currentQuiz.questions; track question.id; let i = $index) {
+                      <div class="result-question" [class.correct]="isAnswerCorrect(question.id)" [class.incorrect]="!isAnswerCorrect(question.id)">
+                        <div class="result-question-header">
+                          <span class="result-icon">
+                            @if (isAnswerCorrect(question.id)) {
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            } @else {
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            }
+                          </span>
+                          <span class="result-question-title">Question {{ i + 1 }}</span>
+                          <span class="result-points">{{ getQuestionScore(question.id) }} / {{ question.points }} pts</span>
+                        </div>
+                        <p class="result-question-text">{{ question.question }}</p>
+                        <div class="result-answers">
+                          <p><strong>Votre réponse:</strong> {{ quizAnswers[question.id] }}</p>
+                          <p><strong>Réponse correcte:</strong> {{ question.correctAnswer }}</p>
+                          @if (question.explanation) {
+                            <p class="result-explanation"><strong>Explication:</strong> {{ question.explanation }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Results Actions -->
+                <div class="results-actions">
+                  <button (click)="exitQuiz()" class="btn btn-secondary">
+                    Continuer le Cours
+                  </button>
+                  @if (currentQuiz.allowRetake && !quizPassed) {
+                    <button (click)="retakeQuiz()" class="btn btn-primary">
+                      Reprendre le Quiz
+                    </button>
                   }
                 </div>
               </div>

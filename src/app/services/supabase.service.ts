@@ -31,6 +31,28 @@ export interface CourseContent {
   pdf_url?: string;
   pdf_file?: string;
   duration?: string;
+  quiz?: Quiz;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  type: 'multiple-choice' | 'true-false' | 'short-answer';
+  options?: string[];
+  correctAnswer: string | string[];
+  explanation?: string;
+  points: number;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description: string;
+  questions: QuizQuestion[];
+  passingScore: number;
+  timeLimit?: number;
+  allowRetake: boolean;
+  showCorrectAnswers: boolean;
 }
 
 @Injectable({

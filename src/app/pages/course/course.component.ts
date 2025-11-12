@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { SupabaseService, Course, CourseContent } from '../../services/supabase.service';
+import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion } from '../../services/supabase.service';
 import { takeUntil, switchMap, of } from 'rxjs';
 import { Subject } from 'rxjs';
 
@@ -29,6 +29,18 @@ export class CourseComponent implements OnInit, OnDestroy {
   currentPdfUrl: SafeResourceUrl | null = null;
   showVideo: boolean = false;
   showPdf: boolean = false;
+
+  // Quiz handling
+  isQuizActive: boolean = false;
+  currentQuiz: Quiz | null = null;
+  quizAnswers: { [questionId: string]: string | string[] } = {};
+  quizStartTime: Date | null = null;
+  quizTimeRemaining: number = 0;
+  quizTimerInterval: any = null;
+  showQuizResults: boolean = false;
+  quizScore: number = 0;
+  quizTotalPoints: number = 0;
+  quizPassed: boolean = false;
 
   private destroy$ = new Subject<void>();
 
@@ -101,6 +113,186 @@ export class CourseComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    this.stopQuizTimer();
+  }
+
+  // Quiz Methods
+  startQuiz() {
+    if (!this.currentModule || !this.currentModule.quiz) return;
+
+    this.currentQuiz = this.currentModule.quiz;
+    this.isQuizActive = true;
+    this.showQuizResults = false;
+    this.quizAnswers = {};
+    this.quizStartTime = new Date();
+
+    // Start timer if quiz has time limit
+    if (this.currentQuiz.timeLimit) {
+      this.quizTimeRemaining = this.currentQuiz.timeLimit * 60; // Convert to seconds
+      this.startQuizTimer();
+    }
+
+    // Reset media display when starting quiz
+    this.showVideo = false;
+    this.showPdf = false;
+  }
+
+  startQuizTimer() {
+    this.quizTimerInterval = setInterval(() => {
+      if (this.quizTimeRemaining > 0) {
+        this.quizTimeRemaining--;
+      } else {
+        this.submitQuiz(); // Auto-submit when time runs out
+      }
+    }, 1000);
+  }
+
+  stopQuizTimer() {
+    if (this.quizTimerInterval) {
+      clearInterval(this.quizTimerInterval);
+      this.quizTimerInterval = null;
+    }
+  }
+
+  getQuizTimerDisplay(): string {
+    const minutes = Math.floor(this.quizTimeRemaining / 60);
+    const seconds = this.quizTimeRemaining % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  selectAnswer(questionId: string, answer: string) {
+    this.quizAnswers[questionId] = answer;
+  }
+
+  toggleMultipleChoice(questionId: string, option: string) {
+    if (!this.quizAnswers[questionId]) {
+      this.quizAnswers[questionId] = [];
+    }
+
+    const answers = this.quizAnswers[questionId] as string[];
+    const index = answers.indexOf(option);
+
+    if (index > -1) {
+      answers.splice(index, 1);
+    } else {
+      answers.push(option);
+    }
+  }
+
+  isOptionSelected(questionId: string, option: string): boolean {
+    const answer = this.quizAnswers[questionId];
+    if (Array.isArray(answer)) {
+      return answer.includes(option);
+    }
+    return answer === option;
+  }
+
+  canSubmitQuiz(): boolean {
+    if (!this.currentQuiz) return false;
+
+    // Check if all questions are answered
+    return this.currentQuiz.questions.every(q => {
+      const answer = this.quizAnswers[q.id];
+      if (Array.isArray(answer)) {
+        return answer.length > 0;
+      }
+      return answer && answer.trim().length > 0;
+    });
+  }
+
+  submitQuiz() {
+    if (!this.currentQuiz) return;
+
+    this.stopQuizTimer();
+
+    // Calculate score
+    let score = 0;
+    const totalPoints = this.currentQuiz.questions.reduce((sum, q) => sum + q.points, 0);
+
+    this.currentQuiz.questions.forEach(question => {
+      const userAnswer = this.quizAnswers[question.id];
+      const correctAnswer = question.correctAnswer;
+
+      let isCorrect = false;
+
+      if (Array.isArray(correctAnswer)) {
+        // Multiple correct answers
+        if (Array.isArray(userAnswer)) {
+          const sortedUserAnswer = [...userAnswer].sort();
+          const sortedCorrectAnswer = [...correctAnswer].sort();
+          isCorrect = JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswer);
+        }
+      } else {
+        // Single correct answer
+        if (question.type === 'short-answer') {
+          isCorrect = userAnswer?.toString().trim().toLowerCase() === correctAnswer.toLowerCase();
+        } else {
+          isCorrect = userAnswer === correctAnswer;
+        }
+      }
+
+      if (isCorrect) {
+        score += question.points;
+      }
+    });
+
+    this.quizScore = score;
+    this.quizTotalPoints = totalPoints;
+    this.quizPassed = (score / totalPoints) * 100 >= this.currentQuiz.passingScore;
+    this.showQuizResults = true;
+    this.isQuizActive = false;
+
+    // Scroll to top to show results
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  retakeQuiz() {
+    if (this.currentQuiz?.allowRetake) {
+      this.startQuiz();
+    }
+  }
+
+  exitQuiz() {
+    this.isQuizActive = false;
+    this.showQuizResults = false;
+    this.currentQuiz = null;
+    this.quizAnswers = {};
+    this.stopQuizTimer();
+  }
+
+  isAnswerCorrect(questionId: string): boolean {
+    if (!this.currentQuiz || !this.showQuizResults) return false;
+
+    const question = this.currentQuiz.questions.find(q => q.id === questionId);
+    if (!question) return false;
+
+    const userAnswer = this.quizAnswers[questionId];
+    const correctAnswer = question.correctAnswer;
+
+    if (Array.isArray(correctAnswer)) {
+      if (Array.isArray(userAnswer)) {
+        const sortedUserAnswer = [...userAnswer].sort();
+        const sortedCorrectAnswer = [...correctAnswer].sort();
+        return JSON.stringify(sortedUserAnswer) === JSON.stringify(sortedCorrectAnswer);
+      }
+      return false;
+    } else {
+      if (question.type === 'short-answer') {
+        return userAnswer?.toString().trim().toLowerCase() === correctAnswer.toLowerCase();
+      }
+      return userAnswer === correctAnswer;
+    }
+  }
+
+  getQuestionScore(questionId: string): number {
+    return this.isAnswerCorrect(questionId)
+      ? this.currentQuiz?.questions.find(q => q.id === questionId)?.points || 0
+      : 0;
+  }
+
+  getQuizPercentage(): number {
+    if (this.quizTotalPoints === 0) return 0;
+    return Math.round((this.quizScore / this.quizTotalPoints) * 100);
   }
 
   validateAccessKey() {
@@ -113,7 +305,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     const courseAccessKey = this.course.access_key;
     console.log('Entered key:', this.accessKey.trim().toUpperCase());
     console.log('Expected key:', courseAccessKey?.toUpperCase());
-    
+
     if (this.accessKey.trim().toUpperCase() === courseAccessKey?.toUpperCase()) {
       console.log('Access key is valid! Granting access...');
       this.isAccessGranted = true;
@@ -142,8 +334,12 @@ export class CourseComponent implements OnInit, OnDestroy {
 
     this.currentModuleIndex = index;
     this.currentModule = this.course.contents[index];
-    
+
     console.log('Loading module:', this.currentModule);
+    console.log('Module has quiz:', !!this.currentModule.quiz);
+    if (this.currentModule.quiz) {
+      console.log('Quiz details:', this.currentModule.quiz);
+    }
 
     // Reset media display
     this.showVideo = false;
@@ -154,7 +350,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     // Load media if available - handle both snake_case and camelCase
     const videoUrl = (this.currentModule as any).video_url || (this.currentModule as any).videoUrl;
     const pdfUrl = (this.currentModule as any).pdf_url || (this.currentModule as any).pdfUrl;
-    
+
     console.log('Video URL:', videoUrl);
     console.log('PDF URL:', pdfUrl);
 
@@ -173,9 +369,9 @@ export class CourseComponent implements OnInit, OnDestroy {
         console.log('PDF will be shown (no video)');
       }
     }
-    
+
     console.log('Final state - showVideo:', this.showVideo, 'showPdf:', this.showPdf);
-    
+
     // Trigger change detection
     this.cdr.detectChanges();
   }
@@ -216,10 +412,13 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   getModuleTypeIcon(module: CourseContent): string {
-    if (module.video_url && module.pdf_url) return '🎥📄';
-    if (module.video_url) return '🎥';
-    if (module.pdf_url) return '📄';
-    return '📝';
+    let icon = '';
+
+    if (module.video_url) icon += '🎥';
+    if (module.pdf_url) icon += '📄';
+    if (module.quiz) icon += '�';
+
+    return icon || '�';
   }
 
   getCategoryLabel(): string {

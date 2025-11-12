@@ -1306,6 +1306,302 @@
                         />
                       </div>
 
+                      <!-- Quiz Builder (shown when contentType is 'quiz') -->
+                      @if (newContent.contentType === 'quiz') {
+                        <div class="quiz-builder">
+                          <div class="quiz-builder-header">
+                            <h4>🎯 Configuration du Quiz</h4>
+                            <button
+                              type="button"
+                              class="btn btn-secondary btn-sm"
+                              (click)="toggleQuizCreation()">
+                              @if (isCreatingQuiz) {
+                                Fermer le Créateur de Quiz
+                              } @else {
+                                Ouvrir le Créateur de Quiz
+                              }
+                            </button>
+                          </div>
+
+                          @if (isCreatingQuiz) {
+                            <div class="quiz-config card">
+                              <!-- Quiz Settings -->
+                              <div class="form-group">
+                                <label>Titre du Quiz</label>
+                                <input
+                                  type="text"
+                                  [(ngModel)]="newQuiz.title"
+                                  name="quizTitle"
+                                  placeholder="Ex: Évaluation du Module 1"
+                                  class="form-input"
+                                />
+                              </div>
+
+                              <div class="form-group">
+                                <label>Description</label>
+                                <textarea
+                                  [(ngModel)]="newQuiz.description"
+                                  name="quizDescription"
+                                  placeholder="Instructions pour le quiz..."
+                                  class="form-input"
+                                  rows="3"
+                                ></textarea>
+                              </div>
+
+                              <div class="quiz-settings-grid">
+                                <div class="form-group">
+                                  <label>Score de Réussite (%)</label>
+                                  <input
+                                    type="number"
+                                    [(ngModel)]="newQuiz.passingScore"
+                                    name="passingScore"
+                                    min="0"
+                                    max="100"
+                                    class="form-input"
+                                  />
+                                </div>
+
+                                <div class="form-group">
+                                  <label>Temps Limite (minutes)</label>
+                                  <input
+                                    type="number"
+                                    [(ngModel)]="newQuiz.timeLimit"
+                                    name="timeLimit"
+                                    min="1"
+                                    class="form-input"
+                                  />
+                                </div>
+                              </div>
+
+                              <div class="quiz-options">
+                                <label class="checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    [(ngModel)]="newQuiz.allowRetake"
+                                    name="allowRetake"
+                                  />
+                                  <span>Autoriser les tentatives multiples</span>
+                                </label>
+
+                                <label class="checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    [(ngModel)]="newQuiz.showCorrectAnswers"
+                                    name="showCorrectAnswers"
+                                  />
+                                  <span>Afficher les réponses correctes après la soumission</span>
+                                </label>
+                              </div>
+
+                              <!-- Question Builder -->
+                              <div class="question-builder">
+                                <h5>➕ Ajouter une Question</h5>
+
+                                <div class="form-group">
+                                  <label>Type de Question</label>
+                                  <select
+                                    [(ngModel)]="newQuestion.type"
+                                    name="questionType"
+                                    class="form-input"
+                                  >
+                                    <option value="multiple-choice">Choix Multiple</option>
+                                    <option value="true-false">Vrai/Faux</option>
+                                    <option value="short-answer">Réponse Courte</option>
+                                  </select>
+                                </div>
+
+                                <div class="form-group">
+                                  <label>Question</label>
+                                  <textarea
+                                    [(ngModel)]="newQuestion.question"
+                                    name="question"
+                                    placeholder="Entrez la question..."
+                                    class="form-input"
+                                    rows="2"
+                                  ></textarea>
+                                </div>
+
+                                <!-- Multiple Choice Options -->
+                                @if (newQuestion.type === 'multiple-choice') {
+                                  <div class="options-list">
+                                    <label>Options de Réponse</label>
+                                    @for (option of newQuestion.options; track $index; let i = $index) {
+                                      <div class="option-item">
+                                        <input
+                                          type="text"
+                                          [(ngModel)]="newQuestion.options![i]"
+                                          [name]="'option' + i"
+                                          placeholder="Option {{i + 1}}"
+                                          class="form-input"
+                                        />
+                                        <button
+                                          type="button"
+                                          (click)="removeOptionFromQuestion(i)"
+                                          class="remove-option-btn"
+                                          [disabled]="newQuestion.options!.length <= 2"
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    }
+                                    <button
+                                      type="button"
+                                      (click)="addOptionToQuestion()"
+                                      class="btn btn-secondary btn-sm"
+                                    >
+                                      + Ajouter une Option
+                                    </button>
+                                  </div>
+
+                                  <div class="form-group">
+                                    <label>Réponse Correcte</label>
+                                    <select
+                                      [(ngModel)]="newQuestion.correctAnswer"
+                                      name="correctAnswer"
+                                      class="form-input"
+                                    >
+                                      <option value="">Sélectionnez la bonne réponse</option>
+                                      @for (option of newQuestion.options; track $index; let i = $index) {
+                                        @if (option.trim()) {
+                                          <option [value]="option">{{option}}</option>
+                                        }
+                                      }
+                                    </select>
+                                  </div>
+                                }
+
+                                <!-- True/False Options -->
+                                @if (newQuestion.type === 'true-false') {
+                                  <div class="form-group">
+                                    <label>Réponse Correcte</label>
+                                    <select
+                                      [(ngModel)]="newQuestion.correctAnswer"
+                                      name="correctAnswer"
+                                      class="form-input"
+                                    >
+                                      <option value="">Sélectionnez</option>
+                                      <option value="true">Vrai</option>
+                                      <option value="false">Faux</option>
+                                    </select>
+                                  </div>
+                                }
+
+                                <!-- Short Answer -->
+                                @if (newQuestion.type === 'short-answer') {
+                                  <div class="form-group">
+                                    <label>Réponse Correcte</label>
+                                    <input
+                                      type="text"
+                                      [(ngModel)]="newQuestion.correctAnswer"
+                                      name="correctAnswer"
+                                      placeholder="Entrez la réponse attendue"
+                                      class="form-input"
+                                    />
+                                  </div>
+                                }
+
+                                <div class="form-row">
+                                  <div class="form-group">
+                                    <label>Points</label>
+                                    <input
+                                      type="number"
+                                      [(ngModel)]="newQuestion.points"
+                                      name="points"
+                                      min="1"
+                                      class="form-input"
+                                    />
+                                  </div>
+
+                                  <div class="form-group">
+                                    <label>Explication (optionnelle)</label>
+                                    <textarea
+                                      [(ngModel)]="newQuestion.explanation"
+                                      name="explanation"
+                                      placeholder="Expliquez pourquoi c'est la bonne réponse..."
+                                      class="form-input"
+                                      rows="2"
+                                    ></textarea>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  (click)="addQuestionToQuiz()"
+                                  class="btn btn-primary"
+                                >
+                                  ➕ Ajouter la Question
+                                </button>
+                              </div>
+
+                              <!-- Questions List -->
+                              @if (newQuiz.questions.length > 0) {
+                                <div class="questions-list">
+                                  <h5>📝 Questions du Quiz ({{newQuiz.questions.length}})</h5>
+                                  @for (question of newQuiz.questions; track question.id; let i = $index) {
+                                    <div class="question-card">
+                                      <div class="question-header">
+                                        <span class="question-number">Q{{i + 1}}</span>
+                                        <span class="question-type-badge">{{question.type}}</span>
+                                        <span class="question-points">{{question.points}} pts</span>
+                                        <button
+                                          type="button"
+                                          (click)="removeQuestionFromQuiz(i)"
+                                          class="remove-btn"
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                      <p class="question-text">{{question.question}}</p>
+                                      @if (question.options) {
+                                        <ul class="question-options">
+                                          @for (opt of question.options; track $index) {
+                                            <li [class.correct]="opt === question.correctAnswer">
+                                              {{opt}}
+                                              @if (opt === question.correctAnswer) {
+                                                <span class="correct-indicator">✓</span>
+                                              }
+                                            </li>
+                                          }
+                                        </ul>
+                                      } @else {
+                                        <p class="correct-answer">
+                                          <strong>Réponse:</strong> {{question.correctAnswer}}
+                                        </p>
+                                      }
+                                    </div>
+                                  }
+
+                                  <button
+                                    type="button"
+                                    (click)="saveQuizToContent()"
+                                    class="btn btn-success btn-lg"
+                                  >
+                                    💾 Finaliser le Quiz
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          <!-- Quiz Summary (when quiz is created) -->
+                          @if (!isCreatingQuiz && newQuiz.questions.length > 0) {
+                            <div class="quiz-summary card">
+                              <h5>✅ Quiz Créé</h5>
+                              <p><strong>{{newQuiz.title}}</strong></p>
+                              <p>{{newQuiz.questions.length}} questions</p>
+                              <p>Score de réussite: {{newQuiz.passingScore}}%</p>
+                              <button
+                                type="button"
+                                (click)="toggleQuizCreation()"
+                                class="btn btn-secondary btn-sm"
+                              >
+                                Modifier le Quiz
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      }
+
                       <!-- Media Uploads -->
                       <div class="media-uploads">
                         <h4 class="section-title">📱 Ajouter des Médias</h4>
@@ -1489,13 +1785,13 @@
                                   {{ content.duration }}
                                 </span>
                               }
-                              @if (content.videoUrl) {
+                              @if (content.video_url) {
                                 <span class="badge video-badge">
                                   <span class="badge-icon">🎥</span>
                                   Vidéo
                                 </span>
                               }
-                              @if (content.pdfUrl) {
+                              @if (content.pdf_url) {
                                 <span class="badge pdf-badge">
                                   <span class="badge-icon">📄</span>
                                   PDF
@@ -1503,18 +1799,18 @@
                               }
                             </div>
 
-                            @if (content.videoUrl || content.pdfUrl) {
+                            @if (content.video_url || content.pdf_url) {
                               <div class="content-links">
-                                @if (content.videoUrl) {
-                                  <a [href]="content.videoUrl" target="_blank" class="link-btn video">
+                                @if (content.video_url) {
+                                  <a [href]="content.video_url" target="_blank" class="link-btn video">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                       <polygon points="5,3 19,12 5,21 5,3"></polygon>
                                     </svg>
                                     Visionner la Vidéo
                                   </a>
                                 }
-                                @if (content.pdfUrl) {
-                                  <a [href]="content.pdfUrl" target="_blank" class="link-btn pdf">
+                                @if (content.pdf_url) {
+                                  <a [href]="content.pdf_url" target="_blank" class="link-btn pdf">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                       <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
                                       <polyline points="13 2 13 9 20 9"></polyline>
