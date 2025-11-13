@@ -17,6 +17,7 @@
       <ul class="navbar-menu" [class.active]="isMenuOpen">
         <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Accueil</a></li>
         <li><a routerLink="/formations" routerLinkActive="active" (click)="closeMenu()">Formations</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
         @if (isAuthenticated) {
           <li><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a></li>
           <li><button class="btn btn-secondary btn-nav logout-btn" (click)="logout()">Déconnexion</button></li>

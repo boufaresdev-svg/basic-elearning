@@ -30,6 +30,11 @@ export const routes: Routes = [
     title: 'Cours - SMS2I'
   },
   {
+    path: 'contact',
+    loadComponent: () => import('./pages/contact/contact.component').then(m => m.ContactComponent),
+    title: 'Contact - SMS2I'
+  },
+  {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
     title: 'Page Introuvable - SMS2I'
