@@ -71,10 +71,23 @@ export class FormationsComponent implements OnInit, OnDestroy {
     if (totalDuration < 60) return `${totalDuration}m`;
     const hours = Math.floor(totalDuration / 60);
     const mins = totalDuration % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    const timeStr = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+
+    // Calculate days (6 hours per day)
+    const days = Math.ceil(hours / 6);
+    const dayStr = days === 1 ? '1 jour' : `${days} jours`;
+
+    return `${timeStr} (${dayStr})`;
   }
 
   getLevel(course: Course): string {
     return course.level || 'Tous niveaux';
+  }
+
+  getDurationInDays(totalDuration?: number): string {
+    if (!totalDuration) return 'Non spécifié';
+    const hours = Math.floor(totalDuration / 60);
+    const days = Math.ceil(hours / 6);
+    return days === 1 ? '1 jour' : `${days} jours`;
   }
 }
