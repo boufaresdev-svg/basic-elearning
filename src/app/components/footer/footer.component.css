@@ -87,6 +87,17 @@
   color: var(--primary-light);
 }
 
+.contact-link {
+  color: var(--color-gray-light);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.contact-link:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding: var(--spacing-lg) 0;

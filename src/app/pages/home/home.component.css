@@ -49,6 +49,36 @@
   flex-wrap: wrap;
 }
 
+.hero-buttons .btn {
+  font-weight: 600;
+  transition: all var(--transition-base);
+}
+
+.hero-buttons .btn-primary {
+  background-color: var(--secondary-color);
+  color: var(--color-white);
+  border: 2px solid var(--secondary-color);
+}
+
+.hero-buttons .btn-primary:hover {
+  background-color: #e55a2b;
+  border-color: #e55a2b;
+  transform: translateY(-3px);
+}
+
+.hero-buttons .btn-outline {
+  background-color: transparent;
+  color: var(--color-white);
+  border: 2px solid var(--color-white);
+}
+
+.hero-buttons .btn-outline:hover {
+  background-color: var(--color-white);
+  color: var(--primary-color);
+  border-color: var(--color-white);
+  transform: translateY(-3px);
+}
+
 .btn-lg {
   padding: var(--spacing-lg) var(--spacing-2xl);
   font-size: var(--font-size-lg);

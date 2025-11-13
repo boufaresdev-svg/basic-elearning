@@ -472,28 +472,36 @@
   text-decoration: none;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cta-buttons .btn-primary {
   background: var(--color-white);
-  color: var(--primary-color);
+  color: var(--primary-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .cta-buttons .btn-primary:hover {
-  background: var(--color-light);
-  transform: translateY(-2px);
+  background: var(--color-white);
+  color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .cta-buttons .btn-secondary {
   background: transparent;
   color: var(--color-white);
-  border-color: rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--color-white);
 }
 
 .cta-buttons .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-white);
+  color: var(--primary-color);
   border-color: var(--color-white);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsive Design */
