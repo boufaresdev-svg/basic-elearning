@@ -20,7 +20,8 @@ export class CourseComponent implements OnInit, OnDestroy {
   currentModuleIndex: number = 0;
   accessKey: string = '';
   isAccessGranted: boolean = false;
-  showAccessKeyInput: boolean = true;
+  showAccessKeyInput: boolean = false;
+  showDetails: boolean = true;
   isLoading: boolean = false;
   errorMessage: string = '';
 
@@ -41,6 +42,8 @@ export class CourseComponent implements OnInit, OnDestroy {
   quizScore: number = 0;
   quizTotalPoints: number = 0;
   quizPassed: boolean = false;
+
+  activeTab: 'overview' | 'qa' | 'notes' = 'overview';
 
   private destroy$ = new Subject<void>();
 
@@ -81,17 +84,12 @@ export class CourseComponent implements OnInit, OnDestroy {
             console.log('Contents length:', course.contents?.length || 0);
 
             // Check if course has access key requirement
-            if (course.access_key) {
+            if (course.access_key === 'locked' || (course.access_key && course.access_key !== 'open')) {
               console.log('Course requires access key');
-              this.showAccessKeyInput = true;
               this.isAccessGranted = false;
-              console.log('State after setting: showAccessKeyInput=', this.showAccessKeyInput, 'isAccessGranted=', this.isAccessGranted);
             } else {
               console.log('Course is freely accessible');
-              // Course is freely accessible
               this.isAccessGranted = true;
-              this.showAccessKeyInput = false;
-              this.loadFirstModule();
             }
           } else {
             console.log('Course is null/undefined');
@@ -320,6 +318,16 @@ export class CourseComponent implements OnInit, OnDestroy {
     }
   }
 
+  startCourse() {
+    if (this.isAccessGranted) {
+      this.showDetails = false;
+      this.loadFirstModule();
+    } else {
+      this.showDetails = false;
+      this.showAccessKeyInput = true;
+    }
+  }
+
   private loadFirstModule() {
     if (this.course && this.course.contents && this.course.contents.length > 0) {
       this.currentModuleIndex = 0;
@@ -423,19 +431,22 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   getCategoryLabel(): string {
     if (!this.course) return '';
-
-    const categoryLabels: { [key: string]: string } = {
-      'thermo': 'Formations Thermo Fromage',
-      'automatisme': 'Formations Automatisme',
-      'process': 'Formations Process'
+    // Map of category labels
+    const labels: Record<string, string> = {
+      'thermo': 'Thermo Fromage',
+      'automatisme': 'Automatisme',
+      'process': 'Process'
     };
-
-    return categoryLabels[this.course.category] || this.course.category;
+    return labels[this.course.category] || this.course.category;
   }
 
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       this.validateAccessKey();
     }
+  }
+
+  setActiveTab(tab: 'overview' | 'qa' | 'notes') {
+    this.activeTab = tab;
   }
 }

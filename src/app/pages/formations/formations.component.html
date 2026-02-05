@@ -7,52 +7,91 @@
     </div>
   </section>
 
-  <!-- Filters -->
-  <section class="section filters-section">
-    <div class="container">
-      <h2 class="text-center">Filtrer par catégorie</h2>
-      <div class="filter-buttons">
-        @for (category of categoryOptions; track category.value) {
-          <button
-            class="filter-btn"
-            [class.active]="selectedCategory === category.value"
-            (click)="filterByCategory(category.value)">
-            <span class="filter-icon">
-              @switch(category.icon) {
-                @case('all') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                  </svg>
-                }
-                @case('thermo') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                  </svg>
-                }
-                @case('automatisme') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
-                  </svg>
-                }
-                @case('process') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
-                  </svg>
-                }
-              }
+  <div class="container formations-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-search-section">
+        <h3>Rechercher</h3>
+        <div class="search-group">
+          <label>Formation</label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              [(ngModel)]="searchTerm" 
+              placeholder="Ex: Pasteurisation..." 
+              class="search-input"
+            >
+            <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
             </span>
-            {{ category.label }}
-          </button>
+          </div>
+        </div>
+        
+        <div class="search-group">
+          <label>Formateur</label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              [(ngModel)]="searchInstructor" 
+              placeholder="Ex: Jean Dupont..." 
+              class="search-input"
+            >
+             <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-header">
+        <h3>Catégories</h3>
+      </div>
+      
+      <div class="sidebar-menu">
+        @for (cat of sidebarCategories; track cat.id) {
+          <div class="category-item" [class.active-category]="selectedCategory === cat.id">
+            <div class="category-header" (click)="toggleCategory(cat)">
+              <div class="category-label-group" (click)="selectCategory(cat.id); $event.stopPropagation()">
+                <span class="category-name">{{ cat.label }}</span>
+              </div>
+              @if (cat.subcategories.length > 0) {
+                <span class="toggle-icon" [class.open]="cat.isOpen">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </span>
+              }
+            </div>
+            
+            @if (cat.subcategories.length > 0 && cat.isOpen) {
+              <div class="subcategory-list">
+                @for (sub of cat.subcategories; track sub.id) {
+                  <div class="subcategory-item" 
+                       [class.active]="selectedSubCategory === sub.id"
+                       (click)="selectSubCategory(cat.id, sub.id, $event)">
+                    {{ sub.label }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
         }
       </div>
-    </div>
-  </section>
+    </aside>
 
-  <!-- Formations Grid -->
-  <section class="section formations-list-section">
-    <div class="container">
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="results-header">
+        <h2>{{ getCategoryLabel(selectedCategory) }}</h2>
+        <span class="results-count">{{ getFilteredCourses().length }} formation(s)</span>
+      </div>
+
       @if (getFilteredCourses().length > 0) {
         <div class="formations-grid">
           @for (course of getFilteredCourses(); track course.id) {
@@ -93,7 +132,7 @@
                   <span class="category-badge" [class]="'category-' + course.category">
                     {{ getCategoryLabel(course.category) }}
                   </span>
-                  @if (course.access_key) {
+                  @if (course.access_key === 'open') {
                     <span class="access-badge available">✓ Disponible</span>
                   } @else {
                     <span class="access-badge coming-soon">Bientôt</span>
@@ -106,8 +145,8 @@
                 <div class="formation-header">
                   <h3 class="formation-title">{{ course.title }}</h3>
                   <div class="formation-meta">
-                    <span class="level-badge" [class]="'level-' + getLevel(course).toLowerCase().replace(' ', '-')">
-                      {{ getLevel(course) }}
+                    <span class="level-badge" [class]="'level-' + (course.level || 'all').toLowerCase().replace(' ', '-')">
+                      {{ course.level || 'Tous niveaux' }}
                     </span>
                     <span class="duration-badge">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -121,50 +160,17 @@
 
                 <p class="formation-description">{{ course.description }}</p>
 
-                @if (course.objectives) {
-                  <div class="objectives-section">
-                    <h4>Objectifs</h4>
-                    <p class="objectives-text">{{ course.objectives }}</p>
-                  </div>
-                }
-
-                <div class="course-stats">
-                  <div class="stat-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                    </svg>
-                    <span>{{ course.contents.length }} module{{ course.contents.length > 1 ? 's' : '' }}</span>
-                  </div>
-                  <div class="stat-item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span>{{ getLevel(course) }}</span>
-                  </div>
+                <div class="formation-footer">
+                  @if (course.access_key === 'open') {
+                    <a [routerLink]="['/course', course.id]" class="btn-primary">
+                      Découvrir
+                    </a>
+                  } @else {
+                    <button class="btn-secondary" disabled>
+                      Bientôt disponible
+                    </button>
+                  }
                 </div>
-              </div>
-
-              <!-- Course Footer -->
-              <div class="formation-footer">
-                @if (course.access_key) {
-                  <a [routerLink]="['/course', course.id]" class="btn-primary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                    Commencer le cours
-                  </a>
-                } @else {
-                  <button class="btn-secondary" disabled>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                    Bientôt disponible
-                  </button>
-                }
               </div>
             </div>
           }
@@ -178,17 +184,11 @@
             </svg>
           </div>
           <h2>Aucune formation trouvée</h2>
-          <p>
-            @if (selectedCategory) {
-              Aucune formation disponible dans la catégorie sélectionnée.
-            } @else {
-              Aucune formation n'est encore disponible.
-            }
-          </p>
+          <p>Essayez de sélectionner une autre catégorie.</p>
         </div>
       }
-    </div>
-  </section>
+    </main>
+  </div>
 
   <!-- CTA Section -->
   <section class="section cta-section">

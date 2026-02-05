@@ -29,13 +29,112 @@
 
   <!-- Course Loaded -->
   @if (course && !isLoading) {
+
+    <!-- Course Landing Page (Details) -->
+    @if (showDetails) {
+      <div class="course-landing">
+        <div class="course-hero">
+          <div class="container hero-content">
+            <span class="category-badge">{{ getCategoryLabel() }}</span>
+            <h1>{{ course.title }}</h1>
+            <p class="hero-description">{{ course.description }}</p>
+            <div class="hero-meta">
+              <span class="meta-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12,6 12,12 16,14"></polyline>
+                </svg>
+                {{ course.total_duration ? (course.total_duration + ' min') : 'Durée variable' }}
+              </span>
+              <span class="meta-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                {{ course.level || 'Tous niveaux' }}
+              </span>
+            </div>
+            <button (click)="startCourse()" class="btn btn-primary btn-lg start-btn">
+              {{ isAccessGranted ? 'Commencer la formation' : 'S\'inscrire au cours' }}
+            </button>
+          </div>
+          <div class="hero-image" [style.background-image]="'url(' + (course.image || 'assets/images/placeholder.jpg') + ')'"></div>
+        </div>
+
+        <div class="container course-details-grid">
+          <div class="main-column">
+            <section class="detail-section">
+              <h2>À propos de ce cours</h2>
+              <p>{{ course.description }}</p>
+              @if (course.objectives) {
+                <h3>Objectifs pédagogiques</h3>
+                <p>{{ course.objectives }}</p>
+              }
+            </section>
+
+            <section class="detail-section syllabus-section">
+              <h2>Programme de la formation</h2>
+              <div class="syllabus-list">
+                @for (module of course.contents; track module.id; let i = $index) {
+                  <div class="syllabus-item">
+                    <div class="module-number">{{ i + 1 }}</div>
+                    <div class="module-info">
+                      <h4>{{ module.title }}</h4>
+                      <p>{{ module.description }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          </div>
+
+          <aside class="sidebar-column">
+            <div class="info-card">
+              <h3>Informations</h3>
+              <ul class="info-list">
+                <li>
+                  <span class="label">Durée:</span>
+                  <span class="value">{{ course.total_duration ? course.total_duration + ' min' : 'Non spécifié' }}</span>
+                </li>
+                <li>
+                  <span class="label">Niveau:</span>
+                  <span class="value">{{ course.level || 'Tous niveaux' }}</span>
+                </li>
+                <li>
+                  <span class="label">Modules:</span>
+                  <span class="value">{{ course.contents.length }}</span>
+                </li>
+                 <li>
+                  <span class="label">Accès:</span>
+                  <span class="value status-badge" [class.open]="isAccessGranted">{{ isAccessGranted ? 'Ouvert' : 'Sur inscription' }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="instructor-card">
+              <h3>Formateur</h3>
+              <div class="instructor-profile">
+                <div class="avatar-placeholder">
+                  {{ course.instructor ? course.instructor.charAt(0) : 'F' }}
+                </div>
+                <div class="instructor-info">
+                  <h4>{{ course.instructor || 'Équipe SMS2I' }}</h4>
+                  <p>Expert Industriel</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    }
+
     <!-- Access Key Input -->
-    @if (showAccessKeyInput && !isAccessGranted) {
+    @if (showAccessKeyInput && !isAccessGranted && !showDetails) {
       <div class="access-key-container">
         <div class="access-key-modal">
           <div class="modal-header">
             <h2>Accès au Cours</h2>
-            <button (click)="goBack()" class="close-btn">
+            <button (click)="showDetails = true; showAccessKeyInput = false" class="close-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -57,16 +156,16 @@
                 </svg>
               </div>
 
-              <p class="access-message">Ce cours nécessite une clé d'accès pour être consulté.</p>
+              <p class="access-message">Ce cours nécessite une clé d'accès pour être consulté. Veuillez entrer le code fourni par votre administrateur.</p>
 
               <div class="form-group">
-                <label for="access-key">Clé d'accès</label>
+                <label for="access-key">Code d'accès</label>
                 <input
                   type="text"
                   id="access-key"
                   [(ngModel)]="accessKey"
                   (keypress)="onKeyPress($event)"
-                  placeholder="Entrez votre clé d'accès"
+                  placeholder="Ex: SMS2I-2024..."
                   class="form-input"
                   [class.error]="errorMessage"
                 />
@@ -77,10 +176,7 @@
 
               <div class="form-actions">
                 <button (click)="validateAccessKey()" class="btn btn-primary btn-block">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 12l2 2 4-4"></path>
-                  </svg>
-                  Accéder au Cours
+                  Valider le code
                 </button>
               </div>
             </div>
@@ -89,440 +185,223 @@
       </div>
     }
 
-    <!-- Course Content -->
-    @if (isAccessGranted && currentModule) {
-      <!-- Course Header -->
-      <div class="course-header">
-        <div class="course-header-content">
-          <button (click)="goBack()" class="back-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="m12 19-7-7 7-7"></path>
-              <path d="m19 12-7 7-7-7"></path>
-            </svg>
-            Retour
-          </button>
-
-          <div class="course-info">
-            <h1>{{ course.title }}</h1>
-            <p class="course-meta">
-              <span class="category">{{ getCategoryLabel() }}</span>
-              <span class="separator">•</span>
-              <span class="modules-count">{{ course.contents.length }} modules</span>
-            </p>
+    <!-- Course Content (Udemy-style Learning Interface) -->
+    @if (isAccessGranted && currentModule && !showDetails) {
+      <div class="learning-interface">
+        <!-- Dark Learning Header -->
+        <header class="learning-header">
+          <div class="header-left">
+            <button (click)="goBack()" class="header-back-btn" title="Retour aux détails">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+            <div class="header-title-section">
+              <h1>{{ course.title }}</h1>
+            </div>
           </div>
-
-          <!-- Progress Bar -->
-          <div class="progress-container">
-            <div class="progress-info">
-              <span>Module {{ currentModuleIndex + 1 }} sur {{ course.contents.length }}</span>
+          
+          <div class="header-right">
+            <div class="progress-circle" [style.--progress]="getCourseProgress() + '%'">
+              <svg viewBox="0 0 36 36">
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                  [attr.stroke-dasharray]="getCourseProgress() + ', 100'" />
+              </svg>
               <span>{{ getCourseProgress() }}%</span>
             </div>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="getCourseProgress()"></div>
-            </div>
+            <button class="share-btn" title="Partager">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <!-- Main Content Area -->
-      <div class="content-area">
-        <!-- Sidebar: Module Navigation -->
-        <aside class="modules-sidebar">
-          <div class="sidebar-header">
-            <h3>Modules du Cours</h3>
-          </div>
-
-          <div class="modules-list">
-            @for (module of course.contents; track module.id; let i = $index) {
-              <button
-                (click)="loadModule(i)"
-                [class.active]="i === currentModuleIndex"
-                class="module-item">
-                <div class="module-number">{{ i + 1 }}</div>
-                <div class="module-content">
-                  <div class="module-title">{{ module.title }}</div>
-                  <div class="module-meta">
-                    <span class="module-icon">{{ getModuleTypeIcon(module) }}</span>
-                    @if (module.duration) {
-                      <span class="module-duration">{{ module.duration }}</span>
-                    }
-                  </div>
+        <div class="learning-body">
+          <!-- Main Content Area (Player + Tabs) -->
+          <main class="learning-stage">
+            
+            <!-- Stage / Player Container -->
+            <div class="stage-container">
+              <!-- Video Player -->
+              @if (showVideo && currentVideoUrl) {
+                <div class="video-wrapper">
+                  <iframe [src]="currentVideoUrl" frameborder="0" allowfullscreen></iframe>
                 </div>
-                @if (i === currentModuleIndex) {
-                  <div class="current-indicator">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                  </div>
-                }
-              </button>
-            }
-          </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="module-content">
-          <!-- Module Header -->
-          <div class="module-header">
-            <h2>{{ currentModule.title }}</h2>
-            <div class="module-description" [innerHTML]="currentModule.description"></div>
-
-            <!-- Content Type Badges -->
-            @if (currentModule.video_url || currentModule.pdf_url || currentModule.quiz) {
-              <div class="content-badges">
-                @if (currentModule.video_url) {
-                  <span class="content-badge video">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                    Vidéo disponible
-                  </span>
-                }
-                @if (currentModule.pdf_url) {
-                  <span class="content-badge pdf">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                      <polyline points="13 2 13 9 20 9"></polyline>
-                    </svg>
-                    Document PDF
-                  </span>
-                }
-                @if (currentModule.quiz) {
-                  <span class="content-badge quiz">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M9 11H3v2h6v-2zm12 0h-6v2h6v-2zm-3-7h-2V2h-4v2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H8V6h8v12z"></path>
-                    </svg>
-                    Quiz disponible
-                  </span>
-                }
-              </div>
-            }
-
-            <!-- Media Controls -->
-            <div class="media-controls">
-              @if (currentModule.video_url) {
-                <button
-                  (click)="toggleVideo()"
-                  [class.active]="showVideo"
-                  class="media-btn video-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polygon points="5,3 19,12 5,21"></polygon>
-                  </svg>
-                  Vidéo
-                </button>
               }
 
-              @if (currentModule.pdf_url) {
-                <button
-                  (click)="togglePdf()"
-                  [class.active]="showPdf"
-                  class="media-btn pdf-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                    <polyline points="13 2 13 9 20 9"></polyline>
-                  </svg>
-                  Document PDF
-                </button>
-              }
-
-              @if (currentModule.quiz && !isQuizActive && !showQuizResults) {
-                <button
-                  (click)="startQuiz()"
-                  class="media-btn quiz-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 11H3v2h6v-2zm12 0h-6v2h6v-2zm-3-7h-2V2h-4v2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H8V6h8v12z"></path>
-                  </svg>
-                  Commencer le Quiz
-                </button>
-              }
-            </div>
-          </div>
-
-          <!-- Media Display -->
-          <div class="media-content">
-            <!-- Video Player -->
-            @if (showVideo && currentVideoUrl) {
-              <div class="video-container">
-                <iframe
-                  [src]="currentVideoUrl"
-                  frameborder="0"
-                  allowfullscreen
-                  class="video-player">
-                </iframe>
-              </div>
-            }
-
-            <!-- PDF Viewer -->
-            @if (showPdf && currentPdfUrl) {
-              <div class="pdf-container">
-                <iframe
-                  [src]="currentPdfUrl"
-                  frameborder="0"
-                  class="pdf-viewer">
-                </iframe>
-                <div class="pdf-actions">
-                  <a [href]="currentModule.pdf_url" target="_blank" class="btn btn-secondary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"></path>
-                      <path d="M21 3l-6 6"></path>
-                      <path d="M15 3h6v6"></path>
-                    </svg>
-                    Ouvrir dans un nouvel onglet
-                  </a>
+              <!-- PDF Viewer -->
+              @if (showPdf && currentPdfUrl) {
+                <div class="pdf-wrapper">
+                  <iframe [src]="currentPdfUrl" frameborder="0"></iframe>
                 </div>
-              </div>
-            }
+              }
 
-            <!-- Default Content (when no media is selected) -->
-            @if (!showVideo && !showPdf && !isQuizActive && !showQuizResults) {
-              <div class="default-content">
-                <div class="content-placeholder">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                  </svg>
+              <!-- Quiz Active -->
+              @if (isQuizActive && currentQuiz && !showVideo && !showPdf) {
+                 <div class="quiz-wrapper-embedded">
+                    <div class="quiz-header-emb">
+                      <h3>{{ currentQuiz.title }}</h3>
+                      <span class="timer-badge" *ngIf="currentQuiz.timeLimit">
+                         <svg viewBox="0 0 24 24" w="16" h="16" stroke="currentColor" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                         {{ getQuizTimerDisplay() }}
+                      </span>
+                    </div>
+
+                    <div class="quiz-content-emb">
+                      @for (question of currentQuiz.questions; track question.id; let i = $index) {
+                        <div class="quiz-card-emb">
+                          <h4 class="q-text"><span class="q-num">{{ i + 1 }}.</span> {{ question.question }}</h4>
+                          
+                          @if (question.type === 'multiple-choice' && question.options) {
+                            <div class="options-list">
+                              @for (option of question.options; track option) {
+                                <label class="option-row">
+                                  <input type="radio" [name]="'q-'+question.id" [value]="option" [checked]="isOptionSelected(question.id, option)" (change)="selectAnswer(question.id, option)">
+                                  <span class="opt-text">{{ option }}</span>
+                                </label>
+                              }
+                            </div>
+                          }
+                          @if (question.type === 'true-false') {
+                             <div class="options-list">
+                                <label class="option-row">
+                                  <input type="radio" [name]="'q-'+question.id" value="true" [checked]="isOptionSelected(question.id, 'true')" (change)="selectAnswer(question.id, 'true')">
+                                  <span class="opt-text">Vrai</span>
+                                </label>
+                                <label class="option-row">
+                                  <input type="radio" [name]="'q-'+question.id" value="false" [checked]="isOptionSelected(question.id, 'false')" (change)="selectAnswer(question.id, 'false')">
+                                  <span class="opt-text">Faux</span>
+                                </label>
+                             </div>
+                          }
+                        </div>
+                      }
+                    </div>
+
+                    <div class="quiz-footer-emb">
+                       <button (click)="submitQuiz()" [disabled]="!canSubmitQuiz()" class="btn-udemy-primary">Soumettre</button>
+                    </div>
+                 </div>
+              }
+
+              <!-- Default / Fallback Content -->
+              @if (!showVideo && !showPdf && !isQuizActive && !showQuizResults) {
+                <div class="placeholder-stage">
+                  <div class="placeholder-icon">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polygon points="5 3 19 12 5 21"></polygon></svg>
+                  </div>
                   <h3>Contenu du Module</h3>
-                  <div [innerHTML]="currentModule.description"></div>
-
-                  @if (currentModule.video_url || currentModule.pdf_url || currentModule.quiz) {
-                    <p class="media-hint">
-                      Utilisez les boutons ci-dessus pour accéder au contenu de ce module.
-                    </p>
-                  } @else {
-                    <p class="no-media">Aucun contenu disponible pour ce module.</p>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Quiz Active -->
-            @if (isQuizActive && currentQuiz) {
-              <div class="quiz-container">
-                <!-- Quiz Header -->
-                <div class="quiz-header">
-                  <div class="quiz-info">
-                    <h3>{{ currentQuiz.title }}</h3>
-                    <p>{{ currentQuiz.description }}</p>
-                    <div class="quiz-meta">
-                      <span class="quiz-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        {{ currentQuiz.questions.length }} questions
-                      </span>
-                      @if (currentQuiz.timeLimit) {
-                        <span class="quiz-meta-item timer">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          Temps restant: {{ getQuizTimerDisplay() }}
-                        </span>
-                      }
-                      <span class="quiz-meta-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                        </svg>
-                        Score de passage: {{ currentQuiz.passingScore }}%
-                      </span>
-                    </div>
+                  <div class="stage-desc" [innerHTML]="currentModule.description"></div>
+                  
+                  <div class="action-buttons">
+                    @if (currentModule.video_url) { <button (click)="toggleVideo()" class="btn-ghost-light">Lancer la vidéo</button> }
+                    @if (currentModule.quiz) { <button (click)="startQuiz()" class="btn-ghost-light">Démarrer le Quiz</button> }
                   </div>
                 </div>
-
-                <!-- Quiz Questions -->
-                <div class="quiz-questions">
-                  @for (question of currentQuiz.questions; track question.id; let i = $index) {
-                    <div class="quiz-question-card">
-                      <div class="question-header">
-                        <span class="question-number">Question {{ i + 1 }}</span>
-                        <span class="question-points">{{ question.points }} points</span>
-                      </div>
-
-                      <h4 class="question-text">{{ question.question }}</h4>
-
-                      <!-- Multiple Choice -->
-                      @if (question.type === 'multiple-choice' && question.options) {
-                        <div class="question-options">
-                          @for (option of question.options; track option) {
-                            <label class="option-label">
-                              <input
-                                type="radio"
-                                [name]="'question-' + question.id"
-                                [value]="option"
-                                [checked]="isOptionSelected(question.id, option)"
-                                (change)="selectAnswer(question.id, option)"
-                              />
-                              <span>{{ option }}</span>
-                            </label>
-                          }
-                        </div>
-                      }
-
-                      <!-- True/False -->
-                      @if (question.type === 'true-false') {
-                        <div class="question-options">
-                          <label class="option-label">
-                            <input
-                              type="radio"
-                              [name]="'question-' + question.id"
-                              value="true"
-                              [checked]="isOptionSelected(question.id, 'true')"
-                              (change)="selectAnswer(question.id, 'true')"
-                            />
-                            <span>Vrai</span>
-                          </label>
-                          <label class="option-label">
-                            <input
-                              type="radio"
-                              [name]="'question-' + question.id"
-                              value="false"
-                              [checked]="isOptionSelected(question.id, 'false')"
-                              (change)="selectAnswer(question.id, 'false')"
-                            />
-                            <span>Faux</span>
-                          </label>
-                        </div>
-                      }
-
-                      <!-- Short Answer -->
-                      @if (question.type === 'short-answer') {
-                        <div class="question-input">
-                          <input
-                            type="text"
-                            class="form-input"
-                            placeholder="Votre réponse..."
-                            [(ngModel)]="quizAnswers[question.id]"
-                          />
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <!-- Quiz Actions -->
-                <div class="quiz-actions">
-                  <button (click)="exitQuiz()" class="btn btn-secondary">
-                    Quitter
-                  </button>
-                  <button
-                    (click)="submitQuiz()"
-                    [disabled]="!canSubmitQuiz()"
-                    class="btn btn-primary">
-                    Soumettre le Quiz
-                  </button>
-                </div>
-              </div>
-            }
-
-            <!-- Quiz Results -->
-            @if (showQuizResults && currentQuiz) {
-              <div class="quiz-results">
-                <div class="results-header" [class.passed]="quizPassed" [class.failed]="!quizPassed">
-                  <div class="results-icon">
-                    @if (quizPassed) {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="15" y1="9" x2="9" y2="15"></line>
-                        <line x1="9" y1="9" x2="15" y2="15"></line>
-                      </svg>
-                    }
-                  </div>
-                  <h3>{{ quizPassed ? 'Félicitations !' : 'Essayez encore' }}</h3>
-                  <p class="results-score">
-                    {{ quizScore }} / {{ quizTotalPoints }} points ({{ getQuizPercentage() }}%)
-                  </p>
-                  <p class="results-status">
-                    @if (quizPassed) {
-                      Vous avez réussi ce quiz avec succès !
-                    } @else {
-                      Vous avez besoin d'au moins {{ currentQuiz.passingScore }}% pour réussir.
-                    }
-                  </p>
-                </div>
-
-                <!-- Show Correct Answers (if enabled) -->
-                @if (currentQuiz.showCorrectAnswers) {
-                  <div class="results-details">
-                    <h4>Résultats Détaillés</h4>
-                    @for (question of currentQuiz.questions; track question.id; let i = $index) {
-                      <div class="result-question" [class.correct]="isAnswerCorrect(question.id)" [class.incorrect]="!isAnswerCorrect(question.id)">
-                        <div class="result-question-header">
-                          <span class="result-icon">
-                            @if (isAnswerCorrect(question.id)) {
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                              </svg>
-                            } @else {
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                              </svg>
-                            }
-                          </span>
-                          <span class="result-question-title">Question {{ i + 1 }}</span>
-                          <span class="result-points">{{ getQuestionScore(question.id) }} / {{ question.points }} pts</span>
-                        </div>
-                        <p class="result-question-text">{{ question.question }}</p>
-                        <div class="result-answers">
-                          <p><strong>Votre réponse:</strong> {{ quizAnswers[question.id] }}</p>
-                          <p><strong>Réponse correcte:</strong> {{ question.correctAnswer }}</p>
-                          @if (question.explanation) {
-                            <p class="result-explanation"><strong>Explication:</strong> {{ question.explanation }}</p>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-
-                <!-- Results Actions -->
-                <div class="results-actions">
-                  <button (click)="exitQuiz()" class="btn btn-secondary">
-                    Continuer le Cours
-                  </button>
-                  @if (currentQuiz.allowRetake && !quizPassed) {
-                    <button (click)="retakeQuiz()" class="btn btn-primary">
-                      Reprendre le Quiz
-                    </button>
-                  }
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Module Navigation -->
-          <div class="module-navigation">
-            <button
-              (click)="previousModule()"
-              [disabled]="currentModuleIndex === 0"
-              class="nav-btn prev-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="m15 18-6-6 6-6"></path>
-              </svg>
-              Module Précédent
-            </button>
-
-            <div class="module-indicator">
-              {{ currentModuleIndex + 1 }} / {{ course.contents.length }}
+              }
+              
+              <!-- Navigation Overlay Arrows (Desktop) -->
+              <button class="nav-arrow prev" [disabled]="currentModuleIndex === 0" (click)="previousModule()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button class="nav-arrow next" [disabled]="currentModuleIndex === course.contents.length - 1" (click)="nextModule()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
 
-            <button
-              (click)="nextModule()"
-              [disabled]="currentModuleIndex === course.contents.length - 1"
-              class="nav-btn next-btn">
-              Module Suivant
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="m9 18 6-6-6-6"></path>
-              </svg>
-            </button>
-          </div>
-        </main>
+            <!-- Content Details & Tabs -->
+            <div class="content-details">
+               <div class="content-tabs-nav">
+                 <button class="tab-link" [class.active]="activeTab === 'overview'" (click)="setActiveTab('overview')">Aperçu</button>
+                 <button class="tab-link" [class.active]="activeTab === 'qa'" (click)="setActiveTab('qa')">Questions & Réponses</button>
+                 <button class="tab-link" [class.active]="activeTab === 'notes'" (click)="setActiveTab('notes')">Notes</button>
+               </div>
+               
+               <!-- Overview Tab -->
+               <div class="tab-pane" *ngIf="activeTab === 'overview'">
+                 <h2>A propos de ce module</h2>
+                 <h3>{{ currentModule.title }}</h3>
+                 <div class="module-rich-desc" [innerHTML]="currentModule.description"></div>
+                 
+                 <div class="module-resources" *ngIf="currentModule.pdf_url">
+                    <h4>Ressources</h4>
+                    <a (click)="togglePdf()" class="resource-link">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                      Document Support (PDF)
+                    </a>
+                 </div>
+               </div>
+
+               <!-- Q&A Tab -->
+               <div class="tab-pane" *ngIf="activeTab === 'qa'">
+                 <div class="empty-state-tab">
+                   <h3>Questions & Réponses</h3>
+                   <p>Posez vos questions sur ce module ici. L'instructeur et les autres étudiants vous répondront.</p>
+                   <div class="qa-input-area">
+                      <input type="text" placeholder="Posez une nouvelle question..." class="qa-input">
+                      <button class="btn-primary">Poser</button>
+                   </div>
+                   <!-- Mock List of Questions -->
+                   <div class="qa-list">
+                      <div class="qa-item">
+                        <div class="qa-user-avatar">JD</div>
+                        <div class="qa-content">
+                           <div class="qa-meta"><span class="user-name">Jean Dupont</span> • <span class="time">il y a 2 heures</span></div>
+                           <p class="qa-text">Est-ce que la température doit être maintenue constante pendant toute la durée ?</p>
+                           <a href="javascript:void(0)" class="qa-reply-link">Répondre</a>
+                        </div>
+                      </div>
+                   </div>
+                 </div>
+               </div>
+
+               <!-- Notes Tab -->
+               <div class="tab-pane" *ngIf="activeTab === 'notes'">
+                 <div class="empty-state-tab">
+                   <h3>Mes Notes</h3>
+                   <p>Prenez des notes personnelles sur ce module. Elles seront sauvegardées automatiquement.</p>
+                   <textarea class="notes-textarea" placeholder="Commencez à écrire vos notes ici..."></textarea>
+                   <button class="btn-primary" style="margin-top: 1rem;">Sauvegarder la note</button>
+                 </div>
+               </div>
+            </div>
+
+          </main>
+
+          <!-- Right Sidebar: Curriculum -->
+          <aside class="learning-sidebar">
+            <div class="sidebar-top">
+              <h3>Contenu du cours</h3>
+            </div>
+            
+            <div class="curriculum-list">
+              @for (module of course.contents; track module.id; let i = $index) {
+                <div class="curriculum-item" 
+                     [class.active]="i === currentModuleIndex" 
+                     (click)="loadModule(i)">
+                  
+                  <div class="checkbox-col">
+                     <span class="check-box" [class.checked]="i < currentModuleIndex">
+                       <svg *ngIf="i < currentModuleIndex" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                     </span>
+                  </div>
+                  
+                  <div class="item-details">
+                    <span class="item-title">
+                       Module {{ i + 1 }}: {{ module.title }}
+                    </span>
+                    <div class="item-meta">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ module.duration || '15 min' }}
+                      
+                      <span *ngIf="module.quiz" class="badge-quiz">Quiz</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </aside>
+        </div>
       </div>
     }
 
