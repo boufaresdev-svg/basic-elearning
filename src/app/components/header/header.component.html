@@ -20,7 +20,6 @@
         <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
         @if (isAuthenticated) {
           <li><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Tableau de Bord</a></li>
-          <li><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a></li>
           <li><button class="btn btn-secondary btn-nav logout-btn" (click)="logout()">Déconnexion</button></li>
         } @else {
           <li><a routerLink="/login" class="btn btn-primary btn-nav" (click)="closeMenu()">Connexion</a></li>

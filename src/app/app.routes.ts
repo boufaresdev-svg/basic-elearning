@@ -19,12 +19,6 @@ export const routes: Routes = [
     title: 'Connexion - SMS2I'
   },
   {
-    path: 'admin',
-    loadComponent: () => import('./pages/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
-    title: 'Admin - SMS2I',
-    canActivate: [authGuard]
-  },
-  {
     path: 'course/:id',
     loadComponent: () => import('./pages/course/course.component').then(m => m.CourseComponent),
     title: 'Cours - SMS2I'

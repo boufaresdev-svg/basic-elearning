@@ -11,16 +11,12 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-  // Hardcoded admin credentials
-  private readonly ADMIN_USERNAME = 'sms2iadmin@sms2i.com';
-  private readonly ADMIN_PASSWORD = 'mahdianas123';
-
   email: string = '';
   password: string = '';
   rememberMe: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
-  private returnUrl: string = '/admin';
+  private returnUrl: string = '/dashboard';
 
   constructor(
     private router: Router,
@@ -28,8 +24,8 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Get return url from route parameters or default to '/admin'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin';
+    // Get return url from route parameters or default to '/dashboard'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
     // Check if already authenticated
     if (localStorage.getItem('isAuthenticated') === 'true') {
@@ -59,18 +55,12 @@ export class LoginComponent implements OnInit {
       const userName = this.email.split('@')[0].replace(/[._]/g, ' ');
       localStorage.setItem('userName', userName);
 
-      // Check if admin
-      if (this.email === this.ADMIN_USERNAME && this.password === this.ADMIN_PASSWORD) {
-        localStorage.setItem('isAdmin', 'true');
-        this.router.navigate(['/admin']);
-      } else {
-        localStorage.setItem('isAdmin', 'false');
-        this.router.navigate(['/dashboard']);
-      }
-
       if (this.rememberMe) {
         localStorage.setItem('rememberMe', 'true');
       }
+
+      // Redirect to dashboard
+      this.router.navigate(['/dashboard']);
     }, 800);
   }
 }
