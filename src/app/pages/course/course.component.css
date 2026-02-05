@@ -1,6 +1,7 @@
 /* Course Container */
 .course-container {
   min-height: 100vh;
+  padding-top: var(--header-height);
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }

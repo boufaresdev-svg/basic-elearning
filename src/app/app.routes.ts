@@ -35,6 +35,11 @@ export const routes: Routes = [
     title: 'Contact - SMS2I'
   },
   {
+    path: 'register',
+    loadComponent: () => import('./pages/signup/signup.component').then(m => m.SignupComponent),
+    title: 'Inscription - SMS2I'
+  },
+  {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
     title: 'Page Introuvable - SMS2I'

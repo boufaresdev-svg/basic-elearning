@@ -3,11 +3,15 @@
    ============================================ */
 
 /* Hero Section */
+.formations-wrapper {
+  padding-top: var(--header-height);
+}
+
 .hero-small {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
   color: var(--color-white);
   padding: var(--spacing-3xl) var(--spacing-lg);
-  margin-top: var(--header-height);
+  /* margin-top removed to avoid collapse issues */
   text-align: center;
   position: relative;
   overflow: hidden;
