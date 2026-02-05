@@ -40,6 +40,12 @@ export const routes: Routes = [
     title: 'Inscription - SMS2I'
   },
   {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent),
+    title: 'Mon Tableau de Bord - SMS2I',
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent),
     title: 'Page Introuvable - SMS2I'

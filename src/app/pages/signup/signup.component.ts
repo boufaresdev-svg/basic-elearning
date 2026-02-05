@@ -41,21 +41,20 @@ export class SignupComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Simulate API call
+    // Simulate API call - auto login after signup
     setTimeout(() => {
       this.isLoading = false;
-      this.successMessage = 'Inscription réussie ! Vous pouvez maintenant vous connecter.';
-
-      // Optional: Clean form
-      this.fullName = '';
-      this.email = '';
-      this.password = '';
-      this.confirmPassword = '';
-      this.agreeTerms = false;
+      this.successMessage = 'Inscription réussie ! Redirection...';
+      
+      // Store authentication state
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', this.email);
+      localStorage.setItem('userName', this.fullName);
+      localStorage.setItem('isAdmin', 'false');
 
       setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-    }, 1500);
+        this.router.navigate(['/dashboard']);
+      }, 1500);
+    }, 1000);
   }
 }

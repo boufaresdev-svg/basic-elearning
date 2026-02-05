@@ -46,26 +46,30 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Validate against hardcoded credentials
+    // Accept any login credentials (using fake data)
     setTimeout(() => {
+      // Login successful
+      this.isLoading = false;
+
+      // Store authentication state
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', this.email);
+      
+      // Extract name from email
+      const userName = this.email.split('@')[0].replace(/[._]/g, ' ');
+      localStorage.setItem('userName', userName);
+
+      // Check if admin
       if (this.email === this.ADMIN_USERNAME && this.password === this.ADMIN_PASSWORD) {
-        // Login successful
-        this.isLoading = false;
-
-        // Store authentication state
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('adminEmail', this.email);
-
-        if (this.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        }
-
-        // Redirect to return URL or admin dashboard
-        this.router.navigate([this.returnUrl]);
+        localStorage.setItem('isAdmin', 'true');
+        this.router.navigate(['/admin']);
       } else {
-        // Login failed
-        this.isLoading = false;
-        this.errorMessage = 'Email ou mot de passe incorrect';
+        localStorage.setItem('isAdmin', 'false');
+        this.router.navigate(['/dashboard']);
+      }
+
+      if (this.rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
       }
     }, 800);
   }
