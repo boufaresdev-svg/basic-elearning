@@ -56,6 +56,29 @@ export interface Quiz {
   showCorrectAnswers: boolean;
 }
 
+export interface DiscussionQuestion {
+  id: string;
+  courseId: string;
+  moduleId?: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  question: string;
+  timestamp: string;
+  replies: DiscussionReply[];
+  likes: number;
+}
+
+export interface DiscussionReply {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  reply: string;
+  timestamp: string;
+  isInstructor?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,6 +87,9 @@ export class SupabaseService {
   private coursesSubject = new BehaviorSubject<Course[]>([]);
   public courses$ = this.coursesSubject.asObservable();
   private localStorageKey = 'elearning_formations';
+  private discussionsKey = 'elearning_discussions';
+  private discussionsSubject = new BehaviorSubject<DiscussionQuestion[]>([]);
+  public discussions$ = this.discussionsSubject.asObservable();
 
   // Fake courses data for fallback/demo
   private fakeCourses: Course[] = [
@@ -634,6 +660,77 @@ export class SupabaseService {
       reader.onerror = () => observer.error(new Error('Erreur lecture fichier'));
       reader.readAsText(file);
     });
+  }
+
+  // ============ Discussion Forum Methods ============
+
+  getDiscussions(courseId: string): Observable<DiscussionQuestion[]> {
+    const discussions = this.getDiscussionsFromStorage();
+    return of(discussions.filter(d => d.courseId === courseId));
+  }
+
+  addQuestion(question: Omit<DiscussionQuestion, 'id' | 'timestamp' | 'replies' | 'likes'>): Observable<DiscussionQuestion> {
+    const newQuestion: DiscussionQuestion = {
+      ...question,
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      replies: [],
+      likes: 0
+    };
+    
+    const discussions = this.getDiscussionsFromStorage();
+    discussions.unshift(newQuestion);
+    this.saveDiscussionsToStorage(discussions);
+    this.discussionsSubject.next(discussions);
+    
+    return of(newQuestion);
+  }
+
+  addReply(questionId: string, reply: Omit<DiscussionReply, 'id' | 'timestamp'>): Observable<DiscussionQuestion> {
+    const discussions = this.getDiscussionsFromStorage();
+    const questionIndex = discussions.findIndex(q => q.id === questionId);
+    
+    if (questionIndex !== -1) {
+      const newReply: DiscussionReply = {
+        ...reply,
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString()
+      };
+      
+      discussions[questionIndex].replies.push(newReply);
+      this.saveDiscussionsToStorage(discussions);
+      this.discussionsSubject.next(discussions);
+      
+      return of(discussions[questionIndex]);
+    }
+    
+    return of({} as DiscussionQuestion);
+  }
+
+  deleteQuestion(questionId: string): Observable<boolean> {
+    const discussions = this.getDiscussionsFromStorage();
+    const filtered = discussions.filter(q => q.id !== questionId);
+    this.saveDiscussionsToStorage(filtered);
+    this.discussionsSubject.next(filtered);
+    return of(true);
+  }
+
+  private getDiscussionsFromStorage(): DiscussionQuestion[] {
+    try {
+      const data = localStorage.getItem(this.discussionsKey);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Error reading discussions from localStorage:', error);
+      return [];
+    }
+  }
+
+  private saveDiscussionsToStorage(discussions: DiscussionQuestion[]): void {
+    try {
+      localStorage.setItem(this.discussionsKey, JSON.stringify(discussions));
+    } catch (error) {
+      console.error('Error writing discussions to localStorage:', error);
+    }
   }
 
   // ============ LocalStorage Methods ============

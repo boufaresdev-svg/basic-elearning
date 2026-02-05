@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion } from '../../services/supabase.service';
+import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion, DiscussionQuestion, DiscussionReply } from '../../services/supabase.service';
 import { takeUntil, switchMap, of } from 'rxjs';
 import { Subject } from 'rxjs';
 
@@ -45,6 +45,13 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   activeTab: 'overview' | 'qa' | 'notes' = 'overview';
 
+  // Discussion Forum
+  discussions: DiscussionQuestion[] = [];
+  newQuestion: string = '';
+  replyText: { [key: string]: string } = {};
+  showReplyBox: { [key: string]: boolean } = {};
+  currentUserId: string = '';
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -58,6 +65,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('CourseComponent initialized');
     this.isLoading = true;
+    this.currentUserId = localStorage.getItem('userEmail') || '';
 
     this.route.params
       .pipe(
@@ -448,5 +456,90 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: 'overview' | 'qa' | 'notes') {
     this.activeTab = tab;
+    
+    if (tab === 'qa' && this.course) {
+      this.loadDiscussions();
+    }
+  }
+
+  // Discussion Forum Methods
+  loadDiscussions() {
+    if (!this.course?.id) return;
+    
+    this.supabaseService.getDiscussions(this.course.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(discussions => {
+        this.discussions = discussions;
+      });
+  }
+
+  postQuestion() {
+    if (!this.newQuestion.trim() || !this.course?.id) return;
+
+    const userName = localStorage.getItem('userName') || 'Utilisateur';
+    const userId = localStorage.getItem('userEmail') || 'anonymous';
+    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+
+    this.supabaseService.addQuestion({
+      courseId: this.course.id,
+      moduleId: this.currentModule?.id,
+      userId,
+      userName,
+      userAvatar: userInitials,
+      question: this.newQuestion
+    }).pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.newQuestion = '';
+        this.loadDiscussions();
+      });
+  }
+
+  toggleReplyBox(questionId: string) {
+    this.showReplyBox[questionId] = !this.showReplyBox[questionId];
+  }
+
+  postReply(questionId: string) {
+    if (!this.replyText[questionId]?.trim()) return;
+
+    const userName = localStorage.getItem('userName') || 'Utilisateur';
+    const userId = localStorage.getItem('userEmail') || 'anonymous';
+    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+
+    this.supabaseService.addReply(questionId, {
+      userId,
+      userName,
+      userAvatar: userInitials,
+      reply: this.replyText[questionId]
+    }).pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.replyText[questionId] = '';
+        this.showReplyBox[questionId] = false;
+        this.loadDiscussions();
+      });
+  }
+
+  deleteQuestion(questionId: string) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette question ?')) {
+      this.supabaseService.deleteQuestion(questionId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loadDiscussions();
+        });
+    }
+  }
+
+  getTimeAgo(timestamp: string): string {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diffMs = now.getTime() - past.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'à l\'instant';
+    if (diffMins < 60) return `il y a ${diffMins} min`;
+    if (diffHours < 24) return `il y a ${diffHours}h`;
+    if (diffDays === 1) return 'hier';
+    return `il y a ${diffDays} jours`;
   }
 }
