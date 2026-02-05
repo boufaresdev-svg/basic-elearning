@@ -15,10 +15,10 @@
         <div class="search-group">
           <label>Formation</label>
           <div class="input-wrapper">
-            <input 
-              type="text" 
-              [(ngModel)]="searchTerm" 
-              placeholder="Ex: Pasteurisation..." 
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              placeholder="Ex: Pasteurisation..."
               class="search-input"
             >
             <span class="search-icon">
@@ -29,14 +29,14 @@
             </span>
           </div>
         </div>
-        
+
         <div class="search-group">
           <label>Formateur</label>
           <div class="input-wrapper">
-            <input 
-              type="text" 
-              [(ngModel)]="searchInstructor" 
-              placeholder="Ex: Jean Dupont..." 
+            <input
+              type="text"
+              [(ngModel)]="searchInstructor"
+              placeholder="Ex: Jean Dupont..."
               class="search-input"
             >
              <span class="search-icon">
@@ -52,7 +52,7 @@
       <div class="sidebar-header">
         <h3>Catégories</h3>
       </div>
-      
+
       <div class="sidebar-menu">
         @for (cat of sidebarCategories; track cat.id) {
           <div class="category-item" [class.active-category]="selectedCategory === cat.id">
@@ -68,11 +68,11 @@
                 </span>
               }
             </div>
-            
+
             @if (cat.subcategories.length > 0 && cat.isOpen) {
               <div class="subcategory-list">
                 @for (sub of cat.subcategories; track sub.id) {
-                  <div class="subcategory-item" 
+                  <div class="subcategory-item"
                        [class.active]="selectedSubCategory === sub.id"
                        (click)="selectSubCategory(cat.id, sub.id, $event)">
                     {{ sub.label }}

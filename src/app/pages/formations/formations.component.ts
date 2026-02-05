@@ -232,7 +232,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
       if (this.selectedCategory && course.category !== this.selectedCategory) {
         return false;
       }
-      
+
       // Filter by SubCategory (if property exists on course)
       if (this.selectedSubCategory) {
         const c = course as any;

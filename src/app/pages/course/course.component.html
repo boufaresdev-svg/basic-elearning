@@ -200,12 +200,12 @@
               <h1>{{ course.title }}</h1>
             </div>
           </div>
-          
+
           <div class="header-right">
             <div class="progress-circle" [style.--progress]="getCourseProgress() + '%'">
               <svg viewBox="0 0 36 36">
                 <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                <path class="circle-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                <path class="circle-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   [attr.stroke-dasharray]="getCourseProgress() + ', 100'" />
               </svg>
               <span>{{ getCourseProgress() }}%</span>
@@ -219,7 +219,7 @@
         <div class="learning-body">
           <!-- Main Content Area (Player + Tabs) -->
           <main class="learning-stage">
-            
+
             <!-- Stage / Player Container -->
             <div class="stage-container">
               <!-- Video Player -->
@@ -251,7 +251,7 @@
                       @for (question of currentQuiz.questions; track question.id; let i = $index) {
                         <div class="quiz-card-emb">
                           <h4 class="q-text"><span class="q-num">{{ i + 1 }}.</span> {{ question.question }}</h4>
-                          
+
                           @if (question.type === 'multiple-choice' && question.options) {
                             <div class="options-list">
                               @for (option of question.options; track option) {
@@ -292,14 +292,14 @@
                   </div>
                   <h3>Contenu du Module</h3>
                   <div class="stage-desc" [innerHTML]="currentModule.description"></div>
-                  
+
                   <div class="action-buttons">
                     @if (currentModule.video_url) { <button (click)="toggleVideo()" class="btn-ghost-light">Lancer la vidéo</button> }
                     @if (currentModule.quiz) { <button (click)="startQuiz()" class="btn-ghost-light">Démarrer le Quiz</button> }
                   </div>
                 </div>
               }
-              
+
               <!-- Navigation Overlay Arrows (Desktop) -->
               <button class="nav-arrow prev" [disabled]="currentModuleIndex === 0" (click)="previousModule()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -316,13 +316,13 @@
                  <button class="tab-link" [class.active]="activeTab === 'qa'" (click)="setActiveTab('qa')">Questions & Réponses</button>
                  <button class="tab-link" [class.active]="activeTab === 'notes'" (click)="setActiveTab('notes')">Notes</button>
                </div>
-               
+
                <!-- Overview Tab -->
                <div class="tab-pane" *ngIf="activeTab === 'overview'">
                  <h2>A propos de ce module</h2>
                  <h3>{{ currentModule.title }}</h3>
                  <div class="module-rich-desc" [innerHTML]="currentModule.description"></div>
-                 
+
                  <div class="module-resources" *ngIf="currentModule.pdf_url">
                     <h4>Ressources</h4>
                     <a (click)="togglePdf()" class="resource-link">
@@ -373,19 +373,19 @@
             <div class="sidebar-top">
               <h3>Contenu du cours</h3>
             </div>
-            
+
             <div class="curriculum-list">
               @for (module of course.contents; track module.id; let i = $index) {
-                <div class="curriculum-item" 
-                     [class.active]="i === currentModuleIndex" 
+                <div class="curriculum-item"
+                     [class.active]="i === currentModuleIndex"
                      (click)="loadModule(i)">
-                  
+
                   <div class="checkbox-col">
                      <span class="check-box" [class.checked]="i < currentModuleIndex">
                        <svg *ngIf="i < currentModuleIndex" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
                      </span>
                   </div>
-                  
+
                   <div class="item-details">
                     <span class="item-title">
                        Module {{ i + 1 }}: {{ module.title }}
@@ -393,7 +393,7 @@
                     <div class="item-meta">
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       {{ module.duration || '15 min' }}
-                      
+
                       <span *ngIf="module.quiz" class="badge-quiz">Quiz</span>
                     </div>
                   </div>

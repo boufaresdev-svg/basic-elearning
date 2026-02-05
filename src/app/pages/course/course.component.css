@@ -1079,7 +1079,7 @@
 
 .video-wrapper, .pdf-wrapper {
   width: 100%;
-  height: auto; 
+  height: auto;
   aspect-ratio: 16/9;
   max-height: 100%;
 }
@@ -1102,7 +1102,7 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .curriculum-list {
@@ -1509,17 +1509,17 @@
     height: auto !important;
     overflow-y: auto !important;
   }
-  
+
   .learning-stage {
     flex: none !important;
     height: auto !important;
     overflow: visible !important;
   }
-  
+
   .stage-container {
     min-height: 30vh !important;
   }
-  
+
   .learning-sidebar {
     width: 100% !important;
     height: auto !important;
@@ -1527,7 +1527,7 @@
     border-left: none !important;
     border-top: 1px solid #d1d7dc !important;
   }
-  
+
   /* On mobile, sidebar goes below content or is hidden/collapsible */
   .learning-interface {
     overflow-y: auto !important;
