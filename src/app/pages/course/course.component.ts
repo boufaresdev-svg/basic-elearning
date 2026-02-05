@@ -456,7 +456,7 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: 'overview' | 'qa' | 'notes') {
     this.activeTab = tab;
-    
+
     if (tab === 'qa' && this.course) {
       this.loadDiscussions();
     }
@@ -465,7 +465,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   // Discussion Forum Methods
   loadDiscussions() {
     if (!this.course?.id) return;
-    
+
     this.supabaseService.getDiscussions(this.course.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe(discussions => {

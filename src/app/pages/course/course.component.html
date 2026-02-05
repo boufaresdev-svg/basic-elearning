@@ -337,14 +337,14 @@
                  <div class="qa-section">
                    <h3>Questions & Réponses</h3>
                    <p class="section-subtitle">Posez vos questions sur ce module. L'instructeur et les autres étudiants vous répondront.</p>
-                   
+
                    <!-- Post Question Form -->
                    <div class="qa-input-area">
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         [(ngModel)]="newQuestion"
                         (keypress.enter)="postQuestion()"
-                        placeholder="Posez une nouvelle question..." 
+                        placeholder="Posez une nouvelle question..."
                         class="qa-input">
                       <button (click)="postQuestion()" class="btn btn-primary" [disabled]="!newQuestion.trim()">Poser</button>
                    </div>
@@ -378,7 +378,7 @@
                                }
                              </div>
                              <p class="qa-text">{{ discussion.question }}</p>
-                             
+
                              <!-- Replies -->
                              @if (discussion.replies.length > 0) {
                                <div class="replies-list">
@@ -413,11 +413,11 @@
 
                              @if (showReplyBox[discussion.id]) {
                                <div class="reply-input-area">
-                                 <input 
-                                   type="text" 
+                                 <input
+                                   type="text"
                                    [(ngModel)]="replyText[discussion.id]"
                                    (keypress.enter)="postReply(discussion.id)"
-                                   placeholder="Écrivez votre réponse..." 
+                                   placeholder="Écrivez votre réponse..."
                                    class="reply-input">
                                  <div class="reply-actions">
                                    <button (click)="postReply(discussion.id)" class="btn btn-primary btn-sm" [disabled]="!replyText[discussion.id]?.trim()">Envoyer</button>

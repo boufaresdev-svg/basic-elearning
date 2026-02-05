@@ -677,33 +677,33 @@ export class SupabaseService {
       replies: [],
       likes: 0
     };
-    
+
     const discussions = this.getDiscussionsFromStorage();
     discussions.unshift(newQuestion);
     this.saveDiscussionsToStorage(discussions);
     this.discussionsSubject.next(discussions);
-    
+
     return of(newQuestion);
   }
 
   addReply(questionId: string, reply: Omit<DiscussionReply, 'id' | 'timestamp'>): Observable<DiscussionQuestion> {
     const discussions = this.getDiscussionsFromStorage();
     const questionIndex = discussions.findIndex(q => q.id === questionId);
-    
+
     if (questionIndex !== -1) {
       const newReply: DiscussionReply = {
         ...reply,
         id: Date.now().toString(),
         timestamp: new Date().toISOString()
       };
-      
+
       discussions[questionIndex].replies.push(newReply);
       this.saveDiscussionsToStorage(discussions);
       this.discussionsSubject.next(discussions);
-      
+
       return of(discussions[questionIndex]);
     }
-    
+
     return of({} as DiscussionQuestion);
   }
 
