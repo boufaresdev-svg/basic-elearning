@@ -165,7 +165,7 @@ export class UserDashboardComponent implements OnInit {
     // Load user data from localStorage
     const userEmail = localStorage.getItem('userEmail');
     const userName = localStorage.getItem('userName');
-    
+
     if (userEmail) {
       this.userProfile.email = userEmail;
     }

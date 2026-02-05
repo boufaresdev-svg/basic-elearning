@@ -45,7 +45,7 @@ export class SignupComponent {
     setTimeout(() => {
       this.isLoading = false;
       this.successMessage = 'Inscription réussie ! Redirection...';
-      
+
       // Store authentication state
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', this.email);

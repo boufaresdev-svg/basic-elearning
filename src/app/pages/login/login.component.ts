@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit {
       // Store authentication state
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', this.email);
-      
+
       // Extract name from email
       const userName = this.email.split('@')[0].replace(/[._]/g, ' ');
       localStorage.setItem('userName', userName);
