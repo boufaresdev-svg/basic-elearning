@@ -74,7 +74,7 @@
 
             <section class="detail-section syllabus-section">
               <h2>Programme de la formation</h2>
-              
+
               @if (groupedView && contentGroups.length > 0) {
                 <!-- Grouped View by Objectif Spécifique -->
                 <div class="syllabus-list grouped">
@@ -94,7 +94,7 @@
                           <span class="module-count">{{ group.contents.length }} module(s)</span>
                         </div>
                       </div>
-                      
+
                       @if (group.expanded) {
                         <div class="group-contents">
                           @for (module of group.contents; track module.id; let i = $index) {
@@ -271,14 +271,40 @@
               <!-- Video Player -->
               @if (showVideo && currentVideoUrl) {
                 <div class="video-wrapper">
-                  <iframe [src]="currentVideoUrl" frameborder="0" allowfullscreen></iframe>
+                  <video [src]="currentVideoUrl" controls autoplay class="video-player">
+                    Votre navigateur ne supporte pas la lecture vidéo.
+                  </video>
                 </div>
               }
 
               <!-- PDF Viewer -->
-              @if (showPdf && currentPdfUrl) {
+              @if (showPdf) {
                 <div class="pdf-wrapper">
-                  <iframe [src]="currentPdfUrl" frameborder="0"></iframe>
+                  @if (currentPdfUrl) {
+                    <iframe [src]="currentPdfUrl" frameborder="0"></iframe>
+                  } @else {
+                    <div class="pdf-loading">
+                      <div class="spinner"></div>
+                      <span>Chargement du document...</span>
+                    </div>
+                  }
+                  <div class="pdf-toolbar">
+                    <button (click)="openPdfInNewTab()" class="btn-open-pdf" title="Ouvrir dans un nouvel onglet">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                      Ouvrir dans un nouvel onglet
+                    </button>
+                  </div>
+                </div>
+              }
+
+              <!-- Image Viewer -->
+              @if (showImage && currentImageUrl) {
+                <div class="image-wrapper">
+                  <img [src]="currentImageUrl" [alt]="currentModule.title" class="image-viewer" />
                 </div>
               }
 
@@ -331,7 +357,7 @@
               }
 
               <!-- Default / Fallback Content -->
-              @if (!showVideo && !showPdf && !isQuizActive && !showQuizResults) {
+              @if (!showVideo && !showPdf && !showImage && !isQuizActive && !showQuizResults) {
                 <div class="placeholder-stage">
                   <div class="placeholder-icon">
                     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polygon points="5 3 19 12 5 21"></polygon></svg>
@@ -341,6 +367,8 @@
 
                   <div class="action-buttons">
                     @if (currentModule.video_url) { <button (click)="toggleVideo()" class="btn-ghost-light">Lancer la vidéo</button> }
+                    @if (currentModule.pdf_url) { <button (click)="togglePdf()" class="btn-ghost-light">Voir le document</button> }
+                    @if (currentModule.image_url) { <button (click)="toggleImage()" class="btn-ghost-light">Voir l'image</button> }
                     @if (currentModule.quiz) { <button (click)="startQuiz()" class="btn-ghost-light">Démarrer le Quiz</button> }
                   </div>
                 </div>
@@ -508,11 +536,11 @@
                       </svg>
                       <span class="group-title">{{ group.objectifSpecifiqueTitle }}</span>
                     </div>
-                    
+
                     @if (group.expanded) {
                       @for (module of group.contents; track module.id; let i = $index) {
                         <div class="curriculum-item nested"
-                             [class.active]="currentModule?.id === module.id"
+                             [class.active]="currentModule && currentModule.id === module.id"
                              (click)="loadModuleById(module.id)">
 
                           <div class="checkbox-col">

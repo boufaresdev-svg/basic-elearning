@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion, DiscussionQuestion, DiscussionReply } from '../../services/supabase.service';
 import { FormationApiService } from '../../services/formation-api.service';
+import { environment } from '../../../environments/environment';
 import { takeUntil, switchMap, of, forkJoin } from 'rxjs';
 import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -35,16 +37,23 @@ export class CourseComponent implements OnInit, OnDestroy {
   showDetails: boolean = true;
   isLoading: boolean = false;
   errorMessage: string = '';
-  
+
   // Grouped content by objectif spécifique
   contentGroups: ContentGroup[] = [];
   groupedView: boolean = true; // Toggle for grouped vs flat view
 
+  // Raw formation data from API (contains objectifsSpecifiques)
+  private rawFormation: any = null;
+  private readonly API_BASE = environment.apiUrl;
+
   // Media handling
   currentVideoUrl: SafeResourceUrl | null = null;
   currentPdfUrl: SafeResourceUrl | null = null;
+  rawPdfUrl: string | null = null;
+  currentImageUrl: string | null = null;
   showVideo: boolean = false;
   showPdf: boolean = false;
+  showImage: boolean = false;
 
   // Quiz handling
   isQuizActive: boolean = false;
@@ -74,6 +83,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     private router: Router,
     private supabaseService: SupabaseService,
     private formationApiService: FormationApiService,
+    private http: HttpClient,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {}
@@ -115,6 +125,9 @@ export class CourseComponent implements OnInit, OnDestroy {
               if (!formation) {
                 return null;
               }
+
+              // Store raw formation for later use (objectifsSpecifiques, etc.)
+              this.rawFormation = formation;
 
               // Convert formation to Course format
               const mappedCourse = this.formationApiService.mapFormationToCourse(formation);
@@ -173,177 +186,169 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.stopQuizTimer();
   }
 
-  // Load course contents from API grouped by objectif spécifique
+  // Load course contents from API
   loadCourseContents(formationId: number): void {
     console.log('Loading course contents for formation:', formationId);
 
-    // First, fetch global contents which contain objectifs spécifiques
-    this.formationApiService.getContenuGlobalByFormation(formationId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (globalContents) => {
-          console.log('Global contents received:', globalContents);
-          
-          // Flatten if nested array
-          let contenuGlobaux = globalContents;
-          if (Array.isArray(globalContents) && Array.isArray(globalContents[0])) {
-            contenuGlobaux = globalContents[0];
-          }
+    // Check if formation has objectifsSpecifiques (already in formation response)
+    const objectifsSpecifiques = this.rawFormation?.objectifsSpecifiques;
 
-          if (contenuGlobaux && contenuGlobaux.length > 0) {
-            // For each contenu global, fetch its objectifs spécifiques
-            const groupRequests = contenuGlobaux.map((contenuGlobal: any) => 
-              this.formationApiService.getObjectifsSpecifiquesByContenu(contenuGlobal.idContenuGlobal).pipe(
-                map(objectifs => ({
-                  contenuGlobal,
-                  objectifs: Array.isArray(objectifs) && Array.isArray(objectifs[0]) ? objectifs[0] : objectifs
-                }))
-              )
-            );
-
-            forkJoin(groupRequests).subscribe({
-              next: (results) => {
-                console.log('Objectifs spécifiques received:', results);
-                this.buildContentGroups(results, formationId);
-              },
-              error: (error) => {
-                console.error('Error loading objectifs spécifiques:', error);
-                this.loadFlatContents(formationId);
-              }
-            });
-          } else {
-            console.log('No global contents, loading flat structure...');
-            this.loadFlatContents(formationId);
-          }
-        },
-        error: (error) => {
-          console.error('Error loading global contents:', error);
-          this.loadFlatContents(formationId);
-        }
-      });
-  }
-
-  private buildContentGroups(results: any[], formationId: number): void {
-    const allContentRequests: any[] = [];
-    const groupStructure: any[] = [];
-
-    // Build the group structure and collect content requests
-    results.forEach(({ contenuGlobal, objectifs }) => {
-      if (objectifs && objectifs.length > 0) {
-        objectifs.forEach((objectif: any) => {
-          groupStructure.push({
-            objectifSpecifiqueId: objectif.idObjectifSpecifique?.toString() || 'unknown',
-            objectifSpecifiqueTitle: objectif.descriptionObjectifSpecifique || objectif.titre || 'Objectif',
-            objectifSpecifiqueDescription: objectif.description,
-            contents: [],
-            expanded: true
-          });
-
-          // Fetch contenu jour for this objectif
-          allContentRequests.push(
-            this.formationApiService.getContenuJourByObjectifSpecifique(objectif.idObjectifSpecifique).pipe(
-              switchMap(joursResponse => {
-                const jours = Array.isArray(joursResponse) && Array.isArray(joursResponse[0]) ? joursResponse[0] : joursResponse;
-                if (jours && jours.length > 0) {
-                  // For each jour, fetch detailed contents
-                  const detailRequests = jours.map((jour: any) =>
-                    this.formationApiService.getContenuDetailleByJour(jour.idContenuJour).pipe(
-                      map(details => ({
-                        objectifId: objectif.idObjectifSpecifique,
-                        details: Array.isArray(details) && Array.isArray(details[0]) ? details[0] : details
-                      }))
-                    )
-                  );
-                  return forkJoin(detailRequests);
-                }
-                return of([]);
-              })
-            )
-          );
-        });
-      }
-    });
-
-    // Execute all content requests
-    if (allContentRequests.length > 0) {
-      forkJoin(allContentRequests).subscribe({
-        next: (allDetails: any[]) => {
-          console.log('All detailed contents received:', allDetails);
-          
-          // Flatten and group by objectif
-          allDetails.forEach((detailGroup: any[]) => {
-            if (Array.isArray(detailGroup)) {
-              detailGroup.forEach(({ objectifId, details }) => {
-                if (details && details.length > 0) {
-                  const group = groupStructure.find(g => g.objectifSpecifiqueId === objectifId?.toString());
-                  if (group) {
-                    details.forEach((detail: any) => {
-                      group.contents.push({
-                        id: detail.idContenuDetaille?.toString() || `detail-${Math.random()}`,
-                        title: detail.titre || detail.titreContenu || 'Contenu',
-                        description: detail.description || detail.descriptionContenu || '',
-                        video_url: detail.videoUrl || detail.urlVideo,
-                        pdf_url: detail.pdfUrl || detail.urlPdf,
-                        duration: detail.duree || detail.duration,
-                        quiz: undefined
-                      });
-                    });
-                  }
-                }
-              });
-            }
-          });
-
-          this.contentGroups = groupStructure.filter(g => g.contents.length > 0);
-          console.log('Content groups built:', this.contentGroups);
-
-          // Build flat contents list for compatibility
-          if (this.course) {
-            this.course.contents = this.contentGroups.flatMap(g => g.contents);
-            if (this.course.contents.length > 0) {
-              this.loadModule(0);
-            }
-          }
-        },
-        error: (error) => {
-          console.error('Error building content groups:', error);
-          this.loadFlatContents(formationId);
-        }
-      });
+    if (objectifsSpecifiques && objectifsSpecifiques.length > 0) {
+      console.log('Found objectifsSpecifiques in formation:', objectifsSpecifiques);
+      this.buildGroupedContentsFromObjectifs(objectifsSpecifiques, formationId);
     } else {
-      console.log('No content requests, loading flat structure...');
+      console.log('No objectifsSpecifiques, loading flat contents...');
       this.loadFlatContents(formationId);
     }
   }
 
+  // Build grouped contents from objectifsSpecifiques already in formation response
+  private buildGroupedContentsFromObjectifs(objectifsSpecifiques: any[], formationId: number): void {
+    // Collect all assignedContenuDetailleIds from all objectifs
+    const allDetailIds: number[] = [];
+    const objectifToDetailIds: Map<number, number[]> = new Map();
+
+    objectifsSpecifiques.forEach((objectif: any) => {
+      const detailIds: number[] = [];
+      if (objectif.contenus && objectif.contenus.length > 0) {
+        objectif.contenus.forEach((contenuJour: any) => {
+          if (contenuJour.assignedContenuDetailleIds) {
+            detailIds.push(...contenuJour.assignedContenuDetailleIds);
+            allDetailIds.push(...contenuJour.assignedContenuDetailleIds);
+          }
+        });
+      }
+      objectifToDetailIds.set(objectif.idObjectifSpec, detailIds);
+    });
+
+    console.log('All detail IDs to fetch:', allDetailIds);
+
+    if (allDetailIds.length === 0) {
+      // No detailed content IDs, fall back to flat loading
+      this.loadFlatContents(formationId);
+      return;
+    }
+
+    // Fetch all detailed contents at once
+    this.formationApiService.getContenuDetailleByFormation(formationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allDetails) => {
+          console.log('All detailed contents fetched:', allDetails);
+
+          // Build a map of id -> detail for quick lookup
+          const detailMap = new Map<number, any>();
+          allDetails.forEach((detail: any) => {
+            detailMap.set(detail.idContenuDetaille, detail);
+          });
+
+          // Build content groups
+          const groups: ContentGroup[] = [];
+
+          objectifsSpecifiques.forEach((objectif: any) => {
+            const detailIds = objectifToDetailIds.get(objectif.idObjectifSpec) || [];
+            const contents: CourseContent[] = [];
+
+            detailIds.forEach(id => {
+              const detail = detailMap.get(id);
+              if (detail) {
+                contents.push(this.mapDetailToCourseContent(detail));
+              }
+            });
+
+            if (contents.length > 0) {
+              groups.push({
+                objectifSpecifiqueId: objectif.idObjectifSpec?.toString(),
+                objectifSpecifiqueTitle: objectif.titre || 'Objectif',
+                objectifSpecifiqueDescription: objectif.description || '',
+                contents,
+                expanded: true
+              });
+            }
+          });
+
+          this.contentGroups = groups;
+          this.groupedView = groups.length > 0;
+          console.log('Content groups built:', this.contentGroups);
+
+          // Build flat list for compatibility
+          if (this.course) {
+            this.course.contents = groups.flatMap(g => g.contents);
+            if (this.course.contents.length > 0) {
+              this.loadModule(0);
+            }
+            this.cdr.detectChanges();
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching detailed contents:', error);
+          this.loadFlatContents(formationId);
+        }
+      });
+  }
+
+  // Extract media files from a detailed content's levels
+  private mapDetailToCourseContent(detail: any): CourseContent {
+    let videoUrl: string | undefined;
+    let pdfUrl: string | undefined;
+    let imageUrl: string | undefined;
+
+    // Scan levels for files
+    if (detail.levels && detail.levels.length > 0) {
+      for (const level of detail.levels) {
+        if (level.files && level.files.length > 0) {
+          for (const file of level.files) {
+            const fileType = (file.fileType || '').toLowerCase();
+            const filePath = file.filePath || '';
+            const fileUrl = `${this.API_BASE}/contenus-detailles/files/${filePath}`;
+
+            console.log('File found:', filePath, 'type:', fileType);
+
+            if (fileType.startsWith('video/') || filePath.endsWith('.mp4') || filePath.endsWith('.webm')) {
+              if (!videoUrl) videoUrl = fileUrl;
+            } else if (fileType === 'application/pdf' || filePath.endsWith('.pdf')) {
+              if (!pdfUrl) pdfUrl = fileUrl;
+            } else if (fileType.startsWith('image/') || filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.gif') || filePath.endsWith('.webp')) {
+              if (!imageUrl) imageUrl = fileUrl;
+            }
+          }
+        }
+      }
+    }
+
+    const duration = detail.dureeTheorique || detail.dureePratique;
+
+    return {
+      id: detail.idContenuDetaille?.toString() || `detail-${Math.random()}`,
+      title: detail.titre || 'Contenu',
+      description: detail.methodesPedagogiques || '',
+      video_url: videoUrl,
+      pdf_url: pdfUrl,
+      image_url: imageUrl,
+      duration: duration ? `${duration} min` : undefined,
+      quiz: undefined
+    };
+  }
+
   private loadFlatContents(formationId: number): void {
-    // Fallback to flat structure
+    // Fallback to flat structure using /by-formation endpoint
     this.formationApiService.getContenuDetailleByFormation(formationId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (contents) => {
-          let flatContents = contents;
-          if (Array.isArray(contents) && Array.isArray(contents[0])) {
-            flatContents = contents[0];
-          }
-
-          if (flatContents && flatContents.length > 0) {
-            const mappedContents = flatContents.map((content: any, index: number) => ({
-              id: content.idContenuDetaille?.toString() || `content-${index}`,
-              title: content.titre || content.titreContenu || `Module ${index + 1}`,
-              description: content.description || content.descriptionContenu || '',
-              video_url: content.videoUrl || content.urlVideo,
-              pdf_url: content.pdfUrl || content.urlPdf,
-              duration: content.duree || content.duration,
-              quiz: undefined
-            }));
+          console.log('Flat contents received:', contents);
+          if (contents && contents.length > 0) {
+            const mappedContents = contents.map((content: any) =>
+              this.mapDetailToCourseContent(content)
+            );
 
             if (this.course) {
               this.course.contents = mappedContents;
-              this.groupedView = false; // Disable grouped view
+              this.groupedView = false;
               if (mappedContents.length > 0) {
                 this.loadModule(0);
               }
+              this.cdr.detectChanges();
             }
           }
         },
@@ -591,41 +596,67 @@ export class CourseComponent implements OnInit, OnDestroy {
     // Reset media display
     this.showVideo = false;
     this.showPdf = false;
+    this.showImage = false;
     this.currentVideoUrl = null;
     this.currentPdfUrl = null;
+    this.rawPdfUrl = null;
+    this.currentImageUrl = null;
 
-    // Load media if available - handle both snake_case and camelCase
+    // Load media if available
     const videoUrl = (this.currentModule as any).video_url || (this.currentModule as any).videoUrl;
     const pdfUrl = (this.currentModule as any).pdf_url || (this.currentModule as any).pdfUrl;
+    const imageUrl = (this.currentModule as any).image_url || (this.currentModule as any).imageUrl;
 
     console.log('Video URL:', videoUrl);
     console.log('PDF URL:', pdfUrl);
+    console.log('Image URL:', imageUrl);
 
     if (videoUrl) {
-      this.currentVideoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(videoUrl);
-      // Automatically show video if available
+      this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(videoUrl);
       this.showVideo = true;
-      console.log('Video will be shown');
+    } else if (pdfUrl) {
+      this.rawPdfUrl = pdfUrl;
+      this.showPdf = true;
+      // Fetch PDF as blob to bypass X-Frame-Options: DENY
+      this.loadPdfAsBlob(pdfUrl);
+    } else if (imageUrl) {
+      this.currentImageUrl = imageUrl;
+      this.showImage = true;
     }
 
-    if (pdfUrl) {
-      this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
-      // If no video, automatically show PDF
-      if (!videoUrl) {
-        this.showPdf = true;
-        console.log('PDF will be shown (no video)');
-      }
-    }
-
-    console.log('Final state - showVideo:', this.showVideo, 'showPdf:', this.showPdf);
+    console.log('Final state - showVideo:', this.showVideo, 'showPdf:', this.showPdf, 'showImage:', this.showImage);
 
     // Trigger change detection
     this.cdr.detectChanges();
   }
 
+  private loadPdfAsBlob(pdfUrl: string): void {
+    this.http.get(pdfUrl, { responseType: 'blob' })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          const blobUrl = URL.createObjectURL(blob);
+          this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading PDF as blob:', err);
+          // Fallback: open in new tab
+          this.currentPdfUrl = null;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  openPdfInNewTab(): void {
+    if (this.rawPdfUrl) {
+      window.open(this.rawPdfUrl, '_blank');
+    }
+  }
+
   loadModuleById(moduleId: string) {
     if (!this.course || !this.course.contents) return;
-    
+
     const index = this.course.contents.findIndex(m => m.id === moduleId);
     if (index !== -1) {
       this.loadModule(index);
@@ -634,7 +665,7 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   isModuleCompleted(moduleId: string): boolean {
     if (!this.course || !this.course.contents) return false;
-    
+
     const moduleIndex = this.course.contents.findIndex(m => m.id === moduleId);
     return moduleIndex !== -1 && moduleIndex < this.currentModuleIndex;
   }
@@ -662,6 +693,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.showVideo = !this.showVideo;
     if (this.showVideo) {
       this.showPdf = false;
+      this.showImage = false;
     }
   }
 
@@ -669,6 +701,19 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.showPdf = !this.showPdf;
     if (this.showPdf) {
       this.showVideo = false;
+      this.showImage = false;
+      // Reload blob if not yet loaded
+      if (!this.currentPdfUrl && this.rawPdfUrl) {
+        this.loadPdfAsBlob(this.rawPdfUrl);
+      }
+    }
+  }
+
+  toggleImage() {
+    this.showImage = !this.showImage;
+    if (this.showImage) {
+      this.showVideo = false;
+      this.showPdf = false;
     }
   }
 
@@ -686,9 +731,10 @@ export class CourseComponent implements OnInit, OnDestroy {
 
     if (module.video_url) icon += '🎥';
     if (module.pdf_url) icon += '📄';
-    if (module.quiz) icon += '�';
+    if ((module as any).image_url) icon += '🖼️';
+    if (module.quiz) icon += '📝';
 
-    return icon || '�';
+    return icon || '📚';
   }
 
   getCategoryLabel(): string {

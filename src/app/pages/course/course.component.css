@@ -1821,6 +1821,71 @@
   border: none;
 }
 
+/* Video Player */
+.video-player {
+  width: 100%;
+  max-height: 70vh;
+  background: #000;
+  border-radius: 4px;
+}
+
+/* Image Viewer */
+.image-wrapper {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1c1d1f;
+  padding: 1rem;
+}
+
+.image-viewer {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* PDF Toolbar & Loading */
+.pdf-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem 1rem;
+  background: #2d2f31;
+  border-top: 1px solid #3e4143;
+}
+
+.btn-open-pdf {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #3e4143;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.btn-open-pdf:hover {
+  background: #5624d0;
+}
+
+.pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
 /* Grouped Content Styles */
 .content-group {
   margin-bottom: 1.5rem;
