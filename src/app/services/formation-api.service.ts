@@ -246,6 +246,70 @@ export class FormationApiService {
     return this.http.get<FormateurResponse>(`${API_BASE_URL}/formateurs/${id}`);
   }
 
+  // Content endpoints for course details
+  getContenuGlobalByFormation(idFormation: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/contenusglobaux/by-formation/${idFormation}`).pipe(
+      catchError(error => {
+        console.error('Error fetching global contents:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getContenuDetailleByFormation(idFormation: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/contenus-detailles/by-formation/${idFormation}`).pipe(
+      catchError(error => {
+        console.error('Error fetching detailed contents:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getContenuDetailleWithJours(idFormation: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/contenus-detailles/by-formation/${idFormation}/with-jours`).pipe(
+      catchError(error => {
+        console.error('Error fetching contents with jours:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getPlanFormationsByFormation(idFormation: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/planformations/formation/${idFormation}`).pipe(
+      catchError(error => {
+        console.error('Error fetching plan formations:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getObjectifsSpecifiquesByContenu(idContenuGlobal: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/objectifsspecifiques/by-contenu/${idContenuGlobal}`).pipe(
+      catchError(error => {
+        console.error('Error fetching objectifs spécifiques:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getContenuJourByObjectifSpecifique(idObjectifSpecifique: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/contenusjour/objectif/${idObjectifSpecifique}`).pipe(
+      catchError(error => {
+        console.error('Error fetching contenu jour:', error);
+        return of([]);
+      })
+    );
+  }
+
+  getContenuDetailleByJour(idJour: number): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE_URL}/contenus-detailles/by-jour/${idJour}`).pipe(
+      catchError(error => {
+        console.error('Error fetching detailed contents by jour:', error);
+        return of([]);
+      })
+    );
+  }
+
   // Helper method to get formateur photo URL
   getFormateurPhotoUrl(photoPath: string | undefined): string {
     if (!photoPath) {

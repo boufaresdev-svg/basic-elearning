@@ -74,17 +74,63 @@
 
             <section class="detail-section syllabus-section">
               <h2>Programme de la formation</h2>
-              <div class="syllabus-list">
-                @for (module of course.contents; track module.id; let i = $index) {
-                  <div class="syllabus-item">
-                    <div class="module-number">{{ i + 1 }}</div>
-                    <div class="module-info">
-                      <h4>{{ module.title }}</h4>
-                      <p>{{ module.description }}</p>
+              
+              @if (groupedView && contentGroups.length > 0) {
+                <!-- Grouped View by Objectif Spécifique -->
+                <div class="syllabus-list grouped">
+                  @for (group of contentGroups; track group.objectifSpecifiqueId; let gi = $index) {
+                    <div class="content-group">
+                      <div class="group-header" (click)="group.expanded = !group.expanded">
+                        <div class="group-icon">
+                          <svg [class.rotated]="group.expanded" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </div>
+                        <div class="group-info">
+                          <h3>{{ group.objectifSpecifiqueTitle }}</h3>
+                          @if (group.objectifSpecifiqueDescription) {
+                            <p>{{ group.objectifSpecifiqueDescription }}</p>
+                          }
+                          <span class="module-count">{{ group.contents.length }} module(s)</span>
+                        </div>
+                      </div>
+                      
+                      @if (group.expanded) {
+                        <div class="group-contents">
+                          @for (module of group.contents; track module.id; let i = $index) {
+                            <div class="syllabus-item">
+                              <div class="module-number">{{ gi + 1 }}.{{ i + 1 }}</div>
+                              <div class="module-info">
+                                <h4>{{ module.title }}</h4>
+                                <p>{{ module.description }}</p>
+                                @if (module.duration) {
+                                  <span class="duration">{{ module.duration }}</span>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
                     </div>
-                  </div>
-                }
-              </div>
+                  }
+                </div>
+              } @else {
+                <!-- Flat View -->
+                <div class="syllabus-list">
+                  @for (module of course.contents; track module.id; let i = $index) {
+                    <div class="syllabus-item">
+                      <div class="module-number">{{ i + 1 }}</div>
+                      <div class="module-info">
+                        <h4>{{ module.title }}</h4>
+                        <p>{{ module.description }}</p>
+                        @if (module.duration) {
+                          <span class="duration">{{ module.duration }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </section>
           </div>
 
@@ -452,29 +498,71 @@
             </div>
 
             <div class="curriculum-list">
-              @for (module of course.contents; track module.id; let i = $index) {
-                <div class="curriculum-item"
-                     [class.active]="i === currentModuleIndex"
-                     (click)="loadModule(i)">
+              @if (groupedView && contentGroups.length > 0) {
+                <!-- Grouped view by Objectif Spécifique -->
+                @for (group of contentGroups; track group.objectifSpecifiqueId; let gi = $index) {
+                  <div class="curriculum-group">
+                    <div class="group-header-sidebar" (click)="group.expanded = !group.expanded">
+                      <svg [class.rotated]="group.expanded" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                      <span class="group-title">{{ group.objectifSpecifiqueTitle }}</span>
+                    </div>
+                    
+                    @if (group.expanded) {
+                      @for (module of group.contents; track module.id; let i = $index) {
+                        <div class="curriculum-item nested"
+                             [class.active]="currentModule?.id === module.id"
+                             (click)="loadModuleById(module.id)">
 
-                  <div class="checkbox-col">
-                     <span class="check-box" [class.checked]="i < currentModuleIndex">
-                       <svg *ngIf="i < currentModuleIndex" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
-                     </span>
+                          <div class="checkbox-col">
+                             <span class="check-box" [class.checked]="isModuleCompleted(module.id)">
+                               <svg *ngIf="isModuleCompleted(module.id)" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                             </span>
+                          </div>
+
+                          <div class="item-details">
+                            <span class="item-title">
+                               {{ module.title }}
+                            </span>
+                            <div class="item-meta">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                              {{ module.duration || '15 min' }}
+
+                              <span *ngIf="module.quiz" class="badge-quiz">Quiz</span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    }
                   </div>
+                }
+              } @else {
+                <!-- Flat view -->
+                @for (module of course.contents; track module.id; let i = $index) {
+                  <div class="curriculum-item"
+                       [class.active]="i === currentModuleIndex"
+                       (click)="loadModule(i)">
 
-                  <div class="item-details">
-                    <span class="item-title">
-                       Module {{ i + 1 }}: {{ module.title }}
-                    </span>
-                    <div class="item-meta">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      {{ module.duration || '15 min' }}
+                    <div class="checkbox-col">
+                       <span class="check-box" [class.checked]="i < currentModuleIndex">
+                         <svg *ngIf="i < currentModuleIndex" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                       </span>
+                    </div>
 
-                      <span *ngIf="module.quiz" class="badge-quiz">Quiz</span>
+                    <div class="item-details">
+                      <span class="item-title">
+                         Module {{ i + 1 }}: {{ module.title }}
+                      </span>
+                      <div class="item-meta">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {{ module.duration || '15 min' }}
+
+                        <span *ngIf="module.quiz" class="badge-quiz">Quiz</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                }
               }
             </div>
           </aside>

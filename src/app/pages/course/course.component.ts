@@ -5,9 +5,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion, DiscussionQuestion, DiscussionReply } from '../../services/supabase.service';
 import { FormationApiService } from '../../services/formation-api.service';
-import { takeUntil, switchMap, of } from 'rxjs';
+import { takeUntil, switchMap, of, forkJoin } from 'rxjs';
 import { Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
+
+// Interface for grouped content structure
+export interface ContentGroup {
+  objectifSpecifiqueId: string;
+  objectifSpecifiqueTitle: string;
+  objectifSpecifiqueDescription?: string;
+  contents: CourseContent[];
+  expanded: boolean;
+}
 
 @Component({
   selector: 'app-course',
@@ -26,6 +35,10 @@ export class CourseComponent implements OnInit, OnDestroy {
   showDetails: boolean = true;
   isLoading: boolean = false;
   errorMessage: string = '';
+  
+  // Grouped content by objectif spécifique
+  contentGroups: ContentGroup[] = [];
+  groupedView: boolean = true; // Toggle for grouped vs flat view
 
   // Media handling
   currentVideoUrl: SafeResourceUrl | null = null;
@@ -124,6 +137,11 @@ export class CourseComponent implements OnInit, OnDestroy {
             console.log('Course assigned. Has access_key:', !!course.access_key);
             console.log('Contents length:', course.contents?.length || 0);
 
+            // Fetch course contents from API
+            if (course.id) {
+              this.loadCourseContents(+course.id);
+            }
+
             // Check if course has access key requirement
             if (course.access_key === 'locked' || (course.access_key && course.access_key !== 'open')) {
               console.log('Course requires access key');
@@ -153,6 +171,186 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.stopQuizTimer();
+  }
+
+  // Load course contents from API grouped by objectif spécifique
+  loadCourseContents(formationId: number): void {
+    console.log('Loading course contents for formation:', formationId);
+
+    // First, fetch global contents which contain objectifs spécifiques
+    this.formationApiService.getContenuGlobalByFormation(formationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (globalContents) => {
+          console.log('Global contents received:', globalContents);
+          
+          // Flatten if nested array
+          let contenuGlobaux = globalContents;
+          if (Array.isArray(globalContents) && Array.isArray(globalContents[0])) {
+            contenuGlobaux = globalContents[0];
+          }
+
+          if (contenuGlobaux && contenuGlobaux.length > 0) {
+            // For each contenu global, fetch its objectifs spécifiques
+            const groupRequests = contenuGlobaux.map((contenuGlobal: any) => 
+              this.formationApiService.getObjectifsSpecifiquesByContenu(contenuGlobal.idContenuGlobal).pipe(
+                map(objectifs => ({
+                  contenuGlobal,
+                  objectifs: Array.isArray(objectifs) && Array.isArray(objectifs[0]) ? objectifs[0] : objectifs
+                }))
+              )
+            );
+
+            forkJoin(groupRequests).subscribe({
+              next: (results) => {
+                console.log('Objectifs spécifiques received:', results);
+                this.buildContentGroups(results, formationId);
+              },
+              error: (error) => {
+                console.error('Error loading objectifs spécifiques:', error);
+                this.loadFlatContents(formationId);
+              }
+            });
+          } else {
+            console.log('No global contents, loading flat structure...');
+            this.loadFlatContents(formationId);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading global contents:', error);
+          this.loadFlatContents(formationId);
+        }
+      });
+  }
+
+  private buildContentGroups(results: any[], formationId: number): void {
+    const allContentRequests: any[] = [];
+    const groupStructure: any[] = [];
+
+    // Build the group structure and collect content requests
+    results.forEach(({ contenuGlobal, objectifs }) => {
+      if (objectifs && objectifs.length > 0) {
+        objectifs.forEach((objectif: any) => {
+          groupStructure.push({
+            objectifSpecifiqueId: objectif.idObjectifSpecifique?.toString() || 'unknown',
+            objectifSpecifiqueTitle: objectif.descriptionObjectifSpecifique || objectif.titre || 'Objectif',
+            objectifSpecifiqueDescription: objectif.description,
+            contents: [],
+            expanded: true
+          });
+
+          // Fetch contenu jour for this objectif
+          allContentRequests.push(
+            this.formationApiService.getContenuJourByObjectifSpecifique(objectif.idObjectifSpecifique).pipe(
+              switchMap(joursResponse => {
+                const jours = Array.isArray(joursResponse) && Array.isArray(joursResponse[0]) ? joursResponse[0] : joursResponse;
+                if (jours && jours.length > 0) {
+                  // For each jour, fetch detailed contents
+                  const detailRequests = jours.map((jour: any) =>
+                    this.formationApiService.getContenuDetailleByJour(jour.idContenuJour).pipe(
+                      map(details => ({
+                        objectifId: objectif.idObjectifSpecifique,
+                        details: Array.isArray(details) && Array.isArray(details[0]) ? details[0] : details
+                      }))
+                    )
+                  );
+                  return forkJoin(detailRequests);
+                }
+                return of([]);
+              })
+            )
+          );
+        });
+      }
+    });
+
+    // Execute all content requests
+    if (allContentRequests.length > 0) {
+      forkJoin(allContentRequests).subscribe({
+        next: (allDetails: any[]) => {
+          console.log('All detailed contents received:', allDetails);
+          
+          // Flatten and group by objectif
+          allDetails.forEach((detailGroup: any[]) => {
+            if (Array.isArray(detailGroup)) {
+              detailGroup.forEach(({ objectifId, details }) => {
+                if (details && details.length > 0) {
+                  const group = groupStructure.find(g => g.objectifSpecifiqueId === objectifId?.toString());
+                  if (group) {
+                    details.forEach((detail: any) => {
+                      group.contents.push({
+                        id: detail.idContenuDetaille?.toString() || `detail-${Math.random()}`,
+                        title: detail.titre || detail.titreContenu || 'Contenu',
+                        description: detail.description || detail.descriptionContenu || '',
+                        video_url: detail.videoUrl || detail.urlVideo,
+                        pdf_url: detail.pdfUrl || detail.urlPdf,
+                        duration: detail.duree || detail.duration,
+                        quiz: undefined
+                      });
+                    });
+                  }
+                }
+              });
+            }
+          });
+
+          this.contentGroups = groupStructure.filter(g => g.contents.length > 0);
+          console.log('Content groups built:', this.contentGroups);
+
+          // Build flat contents list for compatibility
+          if (this.course) {
+            this.course.contents = this.contentGroups.flatMap(g => g.contents);
+            if (this.course.contents.length > 0) {
+              this.loadModule(0);
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error building content groups:', error);
+          this.loadFlatContents(formationId);
+        }
+      });
+    } else {
+      console.log('No content requests, loading flat structure...');
+      this.loadFlatContents(formationId);
+    }
+  }
+
+  private loadFlatContents(formationId: number): void {
+    // Fallback to flat structure
+    this.formationApiService.getContenuDetailleByFormation(formationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (contents) => {
+          let flatContents = contents;
+          if (Array.isArray(contents) && Array.isArray(contents[0])) {
+            flatContents = contents[0];
+          }
+
+          if (flatContents && flatContents.length > 0) {
+            const mappedContents = flatContents.map((content: any, index: number) => ({
+              id: content.idContenuDetaille?.toString() || `content-${index}`,
+              title: content.titre || content.titreContenu || `Module ${index + 1}`,
+              description: content.description || content.descriptionContenu || '',
+              video_url: content.videoUrl || content.urlVideo,
+              pdf_url: content.pdfUrl || content.urlPdf,
+              duration: content.duree || content.duration,
+              quiz: undefined
+            }));
+
+            if (this.course) {
+              this.course.contents = mappedContents;
+              this.groupedView = false; // Disable grouped view
+              if (mappedContents.length > 0) {
+                this.loadModule(0);
+              }
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error loading flat contents:', error);
+        }
+      });
   }
 
   // Quiz Methods
@@ -423,6 +621,29 @@ export class CourseComponent implements OnInit, OnDestroy {
 
     // Trigger change detection
     this.cdr.detectChanges();
+  }
+
+  loadModuleById(moduleId: string) {
+    if (!this.course || !this.course.contents) return;
+    
+    const index = this.course.contents.findIndex(m => m.id === moduleId);
+    if (index !== -1) {
+      this.loadModule(index);
+    }
+  }
+
+  isModuleCompleted(moduleId: string): boolean {
+    if (!this.course || !this.course.contents) return false;
+    
+    const moduleIndex = this.course.contents.findIndex(m => m.id === moduleId);
+    return moduleIndex !== -1 && moduleIndex < this.currentModuleIndex;
+  }
+
+  toggleGroup(groupId: string) {
+    const group = this.contentGroups.find(g => g.objectifSpecifiqueId === groupId);
+    if (group) {
+      group.expanded = !group.expanded;
+    }
   }
 
   nextModule() {

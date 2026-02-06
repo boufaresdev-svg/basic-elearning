@@ -1821,3 +1821,131 @@
   border: none;
 }
 
+/* Grouped Content Styles */
+.content-group {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.group-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.group-header:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
+
+.group-icon svg {
+  transition: transform 0.3s ease;
+}
+
+.group-icon svg.rotated {
+  transform: rotate(180deg);
+}
+
+.group-info {
+  flex: 1;
+}
+
+.group-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.group-info p {
+  margin: 0 0 0.5rem 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.module-count {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.group-contents {
+  padding: 0.5rem 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.group-contents .syllabus-item {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.group-contents .syllabus-item:last-child {
+  border-bottom: none;
+}
+
+.duration {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Sidebar Grouped Styles */
+.curriculum-group {
+  margin-bottom: 0.5rem;
+}
+
+.group-header-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #2d2f31;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.group-header-sidebar:hover {
+  background: #3e4143;
+}
+
+.group-header-sidebar svg {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.group-header-sidebar svg.rotated {
+  transform: rotate(180deg);
+}
+
+.group-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.curriculum-item.nested {
+  padding-left: 2rem;
+  background: #1c1d1f;
+}
+
+.curriculum-item.nested:hover {
+  background: #2d2f31;
+}
