@@ -238,7 +238,8 @@ export class SupabaseService {
 
   constructor() {
     this.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-    this.loadCourses();
+    // Don't auto-load courses anymore - call loadCourses() explicitly when needed
+    // this.loadCourses();
   }
 
   // Load all courses

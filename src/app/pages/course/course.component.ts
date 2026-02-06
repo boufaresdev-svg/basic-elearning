@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion, DiscussionQuestion, DiscussionReply } from '../../services/supabase.service';
+import { FormationApiService } from '../../services/formation-api.service';
 import { takeUntil, switchMap, of } from 'rxjs';
 import { Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-course',
@@ -58,6 +60,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private supabaseService: SupabaseService,
+    private formationApiService: FormationApiService,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef
   ) {}
@@ -77,7 +80,37 @@ export class CourseComponent implements OnInit, OnDestroy {
             this.router.navigate(['/formations']);
             return of(null);
           }
-          return this.supabaseService.getCourseById(courseId);
+          // Fetch from Formation API instead of Supabase
+          return this.formationApiService.getFormationById(+courseId).pipe(
+            map(formationResponse => {
+              console.log('Formation API response:', formationResponse);
+
+              // Handle case where API returns array instead of single object
+              let formation = formationResponse;
+              if (Array.isArray(formationResponse)) {
+                if (formationResponse.length === 0) {
+                  return null;
+                }
+                // If nested array like [[{...}]]
+                if (Array.isArray(formationResponse[0])) {
+                  formation = formationResponse[0][0];
+                } else {
+                  formation = formationResponse[0];
+                }
+              }
+
+              if (!formation) {
+                return null;
+              }
+
+              // Convert formation to Course format
+              const mappedCourse = this.formationApiService.mapFormationToCourse(formation);
+              return {
+                ...mappedCourse,
+                contents: [] // Will be populated from API later
+              } as Course;
+            })
+          );
         })
       )
       .subscribe({

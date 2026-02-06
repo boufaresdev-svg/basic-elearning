@@ -87,13 +87,34 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <div class="results-header">
-        <h2>{{ getCategoryLabel(selectedCategory) }}</h2>
-        <span class="results-count">{{ getFilteredCourses().length }} formation(s)</span>
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="alert alert-warning" style="margin-bottom: 1.5rem; padding: 1rem; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404;">
+          <strong>⚠️ Attention:</strong> {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if (isLoadingFormations()) {
+        <div class="loading-state" style="text-align: center; padding: 3rem;">
+          <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+          <p>Chargement des formations...</p>
+        </div>
+      }
+
+      <!-- Debug Info (remove after testing) -->
+      <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-size: 12px; border-radius: 4px;">
+        Debug: isLoading={{ isLoadingFormations() }}, courses.length={{ courses.length }}, filtered={{ getFilteredCourses().length }}
       </div>
 
-      @if (getFilteredCourses().length > 0) {
-        <div class="formations-grid">
+      @if (!isLoadingFormations()) {
+        <div class="results-header">
+          <h2>{{ getCategoryLabel(selectedCategory) }}</h2>
+          <span class="results-count">{{ getFilteredCourses().length }} formation(s)</span>
+        </div>
+
+        @if (getFilteredCourses().length > 0) {
+          <div class="formations-grid">
           @for (course of getFilteredCourses(); track course.id) {
             <div class="formation-card">
               <!-- Course Image -->
@@ -175,17 +196,18 @@
             </div>
           }
         </div>
-      } @else {
-        <div class="empty-state">
-          <div class="empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.35-4.35"></path>
-            </svg>
+        } @else {
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+            <h2>Aucune formation trouvée</h2>
+            <p>Essayez de sélectionner une autre catégorie.</p>
           </div>
-          <h2>Aucune formation trouvée</h2>
-          <p>Essayez de sélectionner une autre catégorie.</p>
-        </div>
+        }
       }
     </main>
   </div>

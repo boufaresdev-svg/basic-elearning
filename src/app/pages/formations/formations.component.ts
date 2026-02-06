@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SupabaseService, Course } from '../../services/supabase.service';
+import { Course } from '../../services/supabase.service';
+import { FormationApiService } from '../../services/formation-api.service';
 import { takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
 
@@ -28,6 +29,8 @@ export class FormationsComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   searchInstructor: string = '';
   private destroy$ = new Subject<void>();
+  isLoadingFormations = signal(true);
+  errorMessage = signal<string | null>(null);
 
   sidebarCategories: SidebarCategory[] = [
     {
@@ -184,16 +187,59 @@ export class FormationsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private formationApiService: FormationApiService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.supabaseService.courses$
+    // Try to load from API first, fallback to fake/Supabase if API fails
+    this.loadFormationsFromApi();
+  }
+
+  private loadFormationsFromApi(): void {
+    this.isLoadingFormations.set(true);
+    this.errorMessage.set(null);
+
+    this.formationApiService.getAllFormations()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((courses) => {
-        const validCourses = courses.filter((c): c is Course & { id: string } => c.id !== undefined) as Course[];
-        // Merge fake courses with real courses
-        this.courses = [...this.fakeCourses, ...validCourses];
+      .subscribe({
+        next: (formations) => {
+          console.log('[FormationsComponent] Raw API response:', formations);
+
+          // Handle case where API returns nested array [[...]] instead of [...]
+          let formationsArray = formations;
+          if (Array.isArray(formations) && formations.length > 0 && Array.isArray(formations[0])) {
+            console.log('[FormationsComponent] Detected nested array, flattening...');
+            formationsArray = formations[0];
+          }
+
+          if (formationsArray && formationsArray.length > 0) {
+            // Map API formations to local course format
+            this.courses = formationsArray.map(f => this.formationApiService.mapFormationToCourse(f));
+            console.log('[FormationsComponent] Mapped courses:', this.courses);
+            console.log('[FormationsComponent] Loaded formations from API:', this.courses.length);
+          } else {
+            console.log('[FormationsComponent] No formations received, falling back');
+            // Fallback to fake data
+            this.loadFakeCourses();
+          }
+          this.isLoadingFormations.set(false);
+          console.log('[FormationsComponent] Loading complete, isLoadingFormations:', this.isLoadingFormations());
+        },
+        error: (error) => {
+          console.error('[FormationsComponent] Error loading from API, falling back to fake data:', error);
+          this.errorMessage.set('Connexion au serveur impossible. Affichage des données de démonstration.');
+          this.loadFakeCourses();
+          this.isLoadingFormations.set(false);
+        }
       });
+  }
+
+  private loadFakeCourses(): void {
+    // Use only fake courses as fallback
+    this.courses = [...this.fakeCourses];
+    console.log('[FormationsComponent] Loaded fake courses as fallback:', this.courses.length);
   }
 
   ngOnDestroy() {
@@ -227,9 +273,12 @@ export class FormationsComponent implements OnInit, OnDestroy {
   }
 
   getFilteredCourses() {
-    return this.courses.filter(course => {
+    const filtered = this.courses.filter(course => {
+      console.log('[Filter] Checking course:', course.title, 'category:', course.category, 'selectedCategory:', this.selectedCategory);
+
       // Filter by Category
       if (this.selectedCategory && course.category !== this.selectedCategory) {
+        console.log('[Filter] Rejected by category');
         return false;
       }
 
@@ -237,6 +286,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
       if (this.selectedSubCategory) {
         const c = course as any;
         if (c.subcategory !== this.selectedSubCategory) {
+          console.log('[Filter] Rejected by subcategory');
           return false;
         }
       }
@@ -245,6 +295,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
       if (this.searchTerm) {
         const term = this.searchTerm.toLowerCase();
         if (!course.title.toLowerCase().includes(term)) {
+          console.log('[Filter] Rejected by search term');
           return false;
         }
       }
@@ -253,12 +304,17 @@ export class FormationsComponent implements OnInit, OnDestroy {
       if (this.searchInstructor) {
         const instructor = (course as any).instructor;
         if (!instructor || !instructor.toLowerCase().includes(this.searchInstructor.toLowerCase())) {
+          console.log('[Filter] Rejected by instructor');
           return false;
         }
       }
 
+      console.log('[Filter] Course passed all filters');
       return true;
     });
+
+    console.log('[getFilteredCourses] Total courses:', this.courses.length, 'Filtered:', filtered.length);
+    return filtered;
   }
 
   getCategoryIcon(category: string): string {
