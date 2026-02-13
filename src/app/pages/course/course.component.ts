@@ -54,6 +54,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   showVideo: boolean = false;
   showPdf: boolean = false;
   showImage: boolean = false;
+  videoError: boolean = false;
 
   // Quiz handling
   isQuizActive: boolean = false;
@@ -607,6 +608,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.showVideo = false;
     this.showPdf = false;
     this.showImage = false;
+    this.videoError = false;
     this.currentVideoUrl = null;
     this.currentPdfUrl = null;
     this.rawPdfUrl = null;
@@ -709,6 +711,14 @@ export class CourseComponent implements OnInit, OnDestroy {
       this.showPdf = false;
       this.showImage = false;
     }
+  }
+
+  onVideoError() {
+    console.warn('Video failed to load:', this.currentVideoUrl);
+    this.showVideo = false;
+    this.currentVideoUrl = null;
+    this.videoError = true;
+    this.cdr.markForCheck();
   }
 
   togglePdf() {

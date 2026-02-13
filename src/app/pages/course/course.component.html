@@ -267,13 +267,31 @@
           <main class="learning-stage">
 
             <!-- Stage / Player Container -->
-            <div class="stage-container">
+            <div class="stage-container" [class.has-video]="showVideo && currentVideoUrl" [class.has-image]="showImage && currentImageUrl">
               <!-- Video Player -->
               @if (showVideo && currentVideoUrl) {
                 <div class="video-wrapper">
-                  <video [src]="currentVideoUrl" controls autoplay class="video-player">
+                  <video [src]="currentVideoUrl" controls autoplay class="video-player" (error)="onVideoError()">
                     Votre navigateur ne supporte pas la lecture vidéo.
                   </video>
+                </div>
+              }
+
+              <!-- Video Error Fallback -->
+              @if (videoError) {
+                <div class="video-error-state">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="48" height="48">
+                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                    <line x1="7" y1="2" x2="7" y2="22"></line>
+                    <line x1="17" y1="2" x2="17" y2="22"></line>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <line x1="2" y1="7" x2="7" y2="7"></line>
+                    <line x1="2" y1="17" x2="7" y2="17"></line>
+                    <line x1="17" y1="7" x2="22" y2="7"></line>
+                    <line x1="17" y1="17" x2="22" y2="17"></line>
+                  </svg>
+                  <p>La vidéo n'a pas pu être chargée.</p>
+                  <p class="video-error-hint">Format non supporté ou fichier introuvable.</p>
                 </div>
               }
 

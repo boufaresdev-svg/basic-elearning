@@ -1068,13 +1068,12 @@
 
 /* Video Player Area */
 .stage-container {
-  background-color: #000;
+  background-color: #1c1d1f;
   width: 100%;
   flex-shrink: 0; /* Don't shrink */
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 360px; /* Minimal usable height */
   max-height: 70%; /* Cap height relative to container */
 }
 
@@ -1098,8 +1097,8 @@
 .learning-sidebar {
   width: 350px;
   height: 100%;
-  background-color: #fff;
-  border-left: 1px solid #d1d7dc;
+  background-color: #1c1d1f;
+  border-left: 1px solid #3e4143;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -1109,6 +1108,23 @@
 .curriculum-list {
   flex: 1;
   overflow-y: auto; /* Scroll ONLY the list, not header */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Light Scrollbar for Sidebar */
+.curriculum-list::-webkit-scrollbar {
+  width: 8px;
+}
+.curriculum-list::-webkit-scrollbar-track {
+  background: #f7f9fa;
+}
+.curriculum-list::-webkit-scrollbar-thumb {
+  background: #d1d7dc;
+  border-radius: 4px;
+}
+.curriculum-list::-webkit-scrollbar-thumb:hover {
+  background: #6a6f73;
 }
 
 /* Responsive */
@@ -1196,9 +1212,9 @@
   background-color: #fff;
 }
 
-/* Video Player Area (Black Box) */
+/* Video Player Area */
 .stage-container {
-  background-color: #000;
+  background-color: #1c1d1f;
   position: relative;
   width: 100%;
   /* Flex basis or max-height helps prevent it from growing infinitely vertically */
@@ -1206,6 +1222,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.stage-container.has-video,
+.stage-container.has-image {
+  background-color: #000;
 }
 
 .video-wrapper, .pdf-wrapper {
@@ -1218,6 +1239,27 @@
 .video-wrapper iframe, .pdf-wrapper iframe {
   width: 100%;
   height: 100%;
+}
+
+.video-error-state {
+  color: #aaa;
+  text-align: center;
+  padding: 3rem;
+}
+
+.video-error-state svg {
+  stroke: #666;
+  margin-bottom: 1rem;
+}
+
+.video-error-state p {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+}
+
+.video-error-hint {
+  font-size: 0.85rem !important;
+  color: #666;
 }
 
 .placeholder-stage {
@@ -1360,7 +1402,7 @@
 .sidebar-top {
   padding: 1rem;
   border-bottom: 1px solid #d1d7dc;
-  background-color: #f7f9fa;
+  background-color: #ffffff;
 }
 .sidebar-top h3 {
   margin: 0;
@@ -1377,17 +1419,21 @@
 .curriculum-item {
   display: flex;
   padding: 0.8rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e0e0e0;
   cursor: pointer;
   transition: background-color 0.2s;
   align-items: flex-start;
+  color: #1c1d1f;
+  background-color: #fff;
 }
 .curriculum-item:hover {
-  background-color: #f0f4f8;
+  background-color: #f7f9fa;
+  color: #000;
 }
 .curriculum-item.active {
   background-color: #e6f2f5; /* Light blue tint or grey */
-  border-left: 4px solid #1c1d1f; /* Left accent */
+  border-left: 4px solid #1c1d1f; /* Dark accent */
+  color: #000;
 }
 
 .checkbox-col {
@@ -1966,33 +2012,31 @@
   color: #4f46e5;
   border-radius: 4px;
   font-size: 0.75rem;
-  font-weight: 500;
-}
-
 /* Sidebar Grouped Styles */
 .curriculum-group {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid #d1d7dc;
 }
 
 .group-header-sidebar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #2d2f31;
+  padding: 1rem;
+  background: #f7f9fa;
   cursor: pointer;
   transition: background 0.2s;
-  border-radius: 4px;
-  margin-bottom: 0.25rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .group-header-sidebar:hover {
-  background: #3e4143;
+  background: #eef2f4;
 }
 
 .group-header-sidebar svg {
   flex-shrink: 0;
   transition: transform 0.3s ease;
+  color: #1c1d1f;
 }
 
 .group-header-sidebar svg.rotated {
@@ -2001,16 +2045,21 @@
 
 .group-title {
   flex: 1;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1c1d1f;
 }
 
 .curriculum-item.nested {
-  padding-left: 2rem;
-  background: #1c1d1f;
+  padding-left: 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
 }
 
+.curriculum-item.nested:hover {
+  background: #e6f2f5;
+  color: #000;
+}
 .curriculum-item.nested:hover {
   background: #2d2f31;
 }
