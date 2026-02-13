@@ -180,10 +180,20 @@ export class CourseComponent implements OnInit, OnDestroy {
       });
   }
 
+  private blobUrl: string | null = null;
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
     this.stopQuizTimer();
+    this.revokeBlobUrl();
+  }
+
+  private revokeBlobUrl() {
+    if (this.blobUrl) {
+      URL.revokeObjectURL(this.blobUrl);
+      this.blobUrl = null;
+    }
   }
 
   // Load course contents from API
@@ -631,11 +641,15 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   private loadPdfAsBlob(pdfUrl: string): void {
+    // Revoke previous blob URL to prevent memory leaks
+    this.revokeBlobUrl();
+
     this.http.get(pdfUrl, { responseType: 'blob' })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (blob) => {
           const blobUrl = URL.createObjectURL(blob);
+          this.blobUrl = blobUrl;
           this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
           this.cdr.detectChanges();
         },

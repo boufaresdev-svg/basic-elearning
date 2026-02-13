@@ -57,6 +57,38 @@
   font-size: var(--font-size-sm);
 }
 
+/* Login type toggle */
+.login-type-toggle {
+  display: flex;
+  background: var(--color-light);
+  border-radius: var(--border-radius-md);
+  padding: 4px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.login-type-toggle .toggle-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-gray);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.login-type-toggle .toggle-btn:hover {
+  color: var(--primary-color);
+}
+
+.login-type-toggle .toggle-btn.active {
+  background: var(--color-white);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
 .form-group {
   margin-bottom: var(--spacing-lg);
 }

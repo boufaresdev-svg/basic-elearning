@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://api.platform.sms2i.com.tn/api'
+  apiUrl: 'http://localhost:8080/api'
 };

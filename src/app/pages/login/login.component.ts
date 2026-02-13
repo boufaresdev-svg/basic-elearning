@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { FormationApiService } from '../../services/formation-api.service';
 
 @Component({
   selector: 'app-login',
@@ -11,16 +12,19 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-  email: string = '';
+  identifier: string = ''; // Can be email or matricule
   password: string = '';
   rememberMe: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
+  loginType: 'email' | 'matricule' = 'email';
   private returnUrl: string = '/dashboard';
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private formationApi: FormationApiService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -33,34 +37,69 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  toggleLoginType() {
+    this.loginType = this.loginType === 'email' ? 'matricule' : 'email';
+    this.identifier = '';
+    this.errorMessage = '';
+  }
+
   onSubmit() {
-    if (!this.email || !this.password) {
+    if (!this.identifier || !this.password) {
       this.errorMessage = 'Veuillez remplir tous les champs';
       return;
+    }
+
+    // Validate based on login type
+    if (this.loginType === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.identifier)) {
+        this.errorMessage = 'Veuillez entrer une adresse email valide';
+        return;
+      }
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Accept any login credentials (using fake data)
-    setTimeout(() => {
-      // Login successful
-      this.isLoading = false;
+    // Authenticate against the API using verify endpoint
+    const loginObservable = this.loginType === 'email'
+      ? this.formationApi.loginApprenant(this.identifier, this.password)
+      : this.formationApi.loginApprenantByMatricule(this.identifier, this.password);
 
-      // Store authentication state
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userEmail', this.email);
+    loginObservable.subscribe({
+      next: (result) => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
 
-      // Extract name from email
-      const userName = this.email.split('@')[0].replace(/[._]/g, ' ');
-      localStorage.setItem('userName', userName);
+        if (result.success && result.apprenant) {
+          // Cache full user data in localStorage
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userEmail', result.apprenant.email);
+          localStorage.setItem('userName', `${result.apprenant.prenom} ${result.apprenant.nom}`);
+          localStorage.setItem('userId', String(result.apprenant.id || ''));
+          localStorage.setItem('isAdmin', 'false');
+          localStorage.setItem('userType', 'apprenant');
+          localStorage.setItem('apprenant', JSON.stringify(result.apprenant));
+          if (result.apprenant.matricule) {
+            localStorage.setItem('userMatricule', result.apprenant.matricule);
+          }
 
-      if (this.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
+          if (this.rememberMe) {
+            localStorage.setItem('rememberMe', 'true');
+          }
+
+          // Redirect to dashboard
+          this.router.navigate([this.returnUrl]);
+        } else {
+          this.errorMessage = result.error || 'Identifiants incorrects';
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Login error:', error);
+        this.errorMessage = 'Erreur de connexion au serveur. Veuillez réessayer.';
+        this.cdr.markForCheck();
       }
-
-      // Redirect to dashboard
-      this.router.navigate(['/dashboard']);
-    }, 800);
+    });
   }
 }
