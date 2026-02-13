@@ -22,6 +22,7 @@ export interface Apprenant {
   sexe?: string;
   photo?: string;
   dateInscription?: string;
+  createdAt?: string;
   statut?: string;
 }
 
