@@ -55,7 +55,7 @@
               </span>
             </div>
             <button (click)="startCourse()" class="btn btn-primary btn-lg start-btn">
-              {{ isAccessGranted ? 'Commencer la formation' : 'S\'inscrire au cours' }}
+              {{ isAccessGranted ? 'Commencer la formation' : 'Demander l\'accès' }}
             </button>
           </div>
           <div class="hero-image" [style.background-image]="'url(' + (course.image || 'assets/images/placeholder.jpg') + ')'"></div>
@@ -174,12 +174,12 @@
       </div>
     }
 
-    <!-- Access Key Input -->
+    <!-- Access Denied - Not Enrolled -->
     @if (showAccessKeyInput && !isAccessGranted && !showDetails) {
       <div class="access-key-container">
         <div class="access-key-modal">
           <div class="modal-header">
-            <h2>Accès au Cours</h2>
+            <h2>Accès Restreint</h2>
             <button (click)="showDetails = true; showAccessKeyInput = false" class="close-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -202,27 +202,18 @@
                 </svg>
               </div>
 
-              <p class="access-message">Ce cours nécessite une clé d'accès pour être consulté. Veuillez entrer le code fourni par votre administrateur.</p>
-
-              <div class="form-group">
-                <label for="access-key">Code d'accès</label>
-                <input
-                  type="text"
-                  id="access-key"
-                  [(ngModel)]="accessKey"
-                  (keypress)="onKeyPress($event)"
-                  placeholder="Ex: SMS2I-2024..."
-                  class="form-input"
-                  [class.error]="errorMessage"
-                />
-                @if (errorMessage) {
-                  <span class="error-text">{{ errorMessage }}</span>
-                }
-              </div>
+              <p class="access-message">
+                <strong>Vous n'êtes pas inscrit à ce cours.</strong><br><br>
+                Pour accéder au contenu de cette formation, vous devez être inscrit dans une classe qui inclut ce cours.<br><br>
+                Veuillez contacter votre administrateur pour obtenir l'accès.
+              </p>
 
               <div class="form-actions">
-                <button (click)="validateAccessKey()" class="btn btn-primary btn-block">
-                  Valider le code
+                <button (click)="showDetails = true; showAccessKeyInput = false" class="btn btn-primary btn-block">
+                  Retour aux détails
+                </button>
+                <button (click)="goBack()" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
+                  Voir d'autres formations
                 </button>
               </div>
             </div>

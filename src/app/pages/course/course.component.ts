@@ -93,6 +93,9 @@ export class CourseComponent implements OnInit, OnDestroy {
     console.log('CourseComponent initialized');
     this.isLoading = true;
     this.currentUserId = localStorage.getItem('userEmail') || '';
+    
+    // Default to not granted - user must be enrolled
+    this.isAccessGranted = false;
 
     this.route.params
       .pipe(
@@ -156,14 +159,8 @@ export class CourseComponent implements OnInit, OnDestroy {
               this.loadCourseContents(+course.id);
             }
 
-            // Check if course has access key requirement
-            if (course.access_key === 'locked' || (course.access_key && course.access_key !== 'open')) {
-              console.log('Course requires access key');
-              this.isAccessGranted = false;
-            } else {
-              console.log('Course is freely accessible');
-              this.isAccessGranted = true;
-            }
+            // Check user enrollment in this course
+            this.checkUserEnrollment(+course.id!);
           } else {
             console.log('Course is null/undefined');
             this.errorMessage = 'Cours introuvable';
@@ -179,6 +176,63 @@ export class CourseComponent implements OnInit, OnDestroy {
           this.errorMessage = 'Erreur lors du chargement du cours';
         }
       });
+  }
+
+  /**
+   * Check if the current user is enrolled in a class that has access to this formation
+   */
+  private checkUserEnrollment(formationId: number): void {
+    const userId = localStorage.getItem('userId');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    
+    // Admins always have access
+    if (isAdmin) {
+      console.log('User is admin - granting access');
+      this.isAccessGranted = true;
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    // If no user logged in, deny access
+    if (!userId) {
+      console.log('No user logged in - denying access');
+      this.isAccessGranted = false;
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    console.log('Checking enrollment for user:', userId, 'formation:', formationId);
+    
+    // Get user's enrolled classes and check if any match this formation
+    this.formationApiService.getApprenantClasses(+userId).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        console.log('User classes response:', response);
+        
+        if (response && response.classes && response.classes.length > 0) {
+          // Check if any of the user's classes have this formation
+          const hasAccess = response.classes.some(classe => {
+            const classeFormationId = classe.formation?.id;
+            console.log('Checking classe:', classe.nom, 'formation id:', classeFormationId);
+            return classeFormationId === formationId;
+          });
+          
+          console.log('User has access to this formation:', hasAccess);
+          this.isAccessGranted = hasAccess;
+        } else {
+          console.log('User has no enrolled classes');
+          this.isAccessGranted = false;
+        }
+        
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error checking enrollment:', err);
+        this.isAccessGranted = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private blobUrl: string | null = null;
@@ -371,6 +425,7 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   // Quiz Methods
   startQuiz() {
+    if (!this.isAccessGranted) return;
     if (!this.currentModule || !this.currentModule.quiz) return;
 
     this.currentQuiz = this.currentModule.quiz;
@@ -591,6 +646,14 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   loadModule(index: number) {
+    // Check if user has access before loading module
+    if (!this.isAccessGranted) {
+      console.warn('Access denied: User is not enrolled in this course');
+      this.showAccessKeyInput = true;
+      this.showDetails = false;
+      return;
+    }
+
     if (!this.course || !this.course.contents || index < 0 || index >= this.course.contents.length) {
       return;
     }
@@ -671,6 +734,12 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   loadModuleById(moduleId: string) {
+    // Check if user has access before loading module
+    if (!this.isAccessGranted) {
+      console.warn('Access denied: User is not enrolled in this course');
+      return;
+    }
+
     if (!this.course || !this.course.contents) return;
 
     const index = this.course.contents.findIndex(m => m.id === moduleId);
@@ -694,18 +763,21 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   nextModule() {
+    if (!this.isAccessGranted) return;
     if (this.course && this.currentModuleIndex < this.course.contents.length - 1) {
       this.loadModule(this.currentModuleIndex + 1);
     }
   }
 
   previousModule() {
+    if (!this.isAccessGranted) return;
     if (this.currentModuleIndex > 0) {
       this.loadModule(this.currentModuleIndex - 1);
     }
   }
 
   toggleVideo() {
+    if (!this.isAccessGranted) return;
     this.showVideo = !this.showVideo;
     if (this.showVideo) {
       this.showPdf = false;
@@ -722,6 +794,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   togglePdf() {
+    if (!this.isAccessGranted) return;
     this.showPdf = !this.showPdf;
     if (this.showPdf) {
       this.showVideo = false;
@@ -734,6 +807,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   toggleImage() {
+    if (!this.isAccessGranted) return;
     this.showImage = !this.showImage;
     if (this.showImage) {
       this.showVideo = false;
