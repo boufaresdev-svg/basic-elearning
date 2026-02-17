@@ -1869,6 +1869,33 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* PowerPoint / Presentation Wrapper */
+.pptx-wrapper {
+  width: 100%;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: #1c1d1f;
+  overflow: hidden;
+}
+
+.pptx-wrapper iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
+.pptx-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #2d2f31;
+  border-top: 1px solid #3e4143;
+  flex-shrink: 0;
+}
+
 /* PDF Toolbar & Loading */
 .pdf-toolbar {
   display: flex;

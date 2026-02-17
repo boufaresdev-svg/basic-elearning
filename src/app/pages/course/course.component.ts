@@ -51,9 +51,12 @@ export class CourseComponent implements OnInit, OnDestroy {
   currentPdfUrl: SafeResourceUrl | null = null;
   rawPdfUrl: string | null = null;
   currentImageUrl: string | null = null;
+  currentPresentationUrl: SafeResourceUrl | null = null;
+  rawPresentationUrl: string | null = null;
   showVideo: boolean = false;
   showPdf: boolean = false;
   showImage: boolean = false;
+  showPresentation: boolean = false;
   videoError: boolean = false;
 
   // Quiz handling
@@ -357,6 +360,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     let videoUrl: string | undefined;
     let pdfUrl: string | undefined;
     let imageUrl: string | undefined;
+    let pptxUrl: string | undefined;
 
     // Scan levels for files
     if (detail.levels && detail.levels.length > 0) {
@@ -373,6 +377,12 @@ export class CourseComponent implements OnInit, OnDestroy {
               if (!videoUrl) videoUrl = fileUrl;
             } else if (fileType === 'application/pdf' || filePath.endsWith('.pdf')) {
               if (!pdfUrl) pdfUrl = fileUrl;
+            } else if (
+              fileType === 'application/vnd.ms-powerpoint' ||
+              fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+              filePath.endsWith('.ppt') || filePath.endsWith('.pptx')
+            ) {
+              if (!pptxUrl) pptxUrl = fileUrl;
             } else if (fileType.startsWith('image/') || filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.gif') || filePath.endsWith('.webp')) {
               if (!imageUrl) imageUrl = fileUrl;
             }
@@ -390,6 +400,7 @@ export class CourseComponent implements OnInit, OnDestroy {
       video_url: videoUrl,
       pdf_url: pdfUrl,
       image_url: imageUrl,
+      pptx_url: pptxUrl,
       duration: duration ? `${duration} min` : undefined,
       quiz: undefined
     };
@@ -671,24 +682,35 @@ export class CourseComponent implements OnInit, OnDestroy {
     this.showVideo = false;
     this.showPdf = false;
     this.showImage = false;
+    this.showPresentation = false;
     this.videoError = false;
     this.currentVideoUrl = null;
     this.currentPdfUrl = null;
     this.rawPdfUrl = null;
     this.currentImageUrl = null;
+    this.currentPresentationUrl = null;
+    this.rawPresentationUrl = null;
 
     // Load media if available
     const videoUrl = (this.currentModule as any).video_url || (this.currentModule as any).videoUrl;
     const pdfUrl = (this.currentModule as any).pdf_url || (this.currentModule as any).pdfUrl;
     const imageUrl = (this.currentModule as any).image_url || (this.currentModule as any).imageUrl;
+    const pptxUrl = (this.currentModule as any).pptx_url || (this.currentModule as any).pptxUrl;
 
     console.log('Video URL:', videoUrl);
     console.log('PDF URL:', pdfUrl);
     console.log('Image URL:', imageUrl);
+    console.log('PPTX URL:', pptxUrl);
 
     if (videoUrl) {
       this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(videoUrl);
       this.showVideo = true;
+    } else if (pptxUrl) {
+      this.rawPresentationUrl = pptxUrl;
+      // Use Microsoft Office Online viewer to embed PowerPoint
+      const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pptxUrl)}`;
+      this.currentPresentationUrl = this.sanitizer.bypassSecurityTrustResourceUrl(officeViewerUrl);
+      this.showPresentation = true;
     } else if (pdfUrl) {
       this.rawPdfUrl = pdfUrl;
       this.showPdf = true;
@@ -782,6 +804,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     if (this.showVideo) {
       this.showPdf = false;
       this.showImage = false;
+      this.showPresentation = false;
     }
   }
 
@@ -799,6 +822,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     if (this.showPdf) {
       this.showVideo = false;
       this.showImage = false;
+      this.showPresentation = false;
       // Reload blob if not yet loaded
       if (!this.currentPdfUrl && this.rawPdfUrl) {
         this.loadPdfAsBlob(this.rawPdfUrl);
@@ -812,6 +836,29 @@ export class CourseComponent implements OnInit, OnDestroy {
     if (this.showImage) {
       this.showVideo = false;
       this.showPdf = false;
+      this.showPresentation = false;
+    }
+  }
+
+  togglePresentation() {
+    if (!this.isAccessGranted) return;
+    this.showPresentation = !this.showPresentation;
+    if (this.showPresentation) {
+      this.showVideo = false;
+      this.showPdf = false;
+      this.showImage = false;
+
+      // Re-build viewer URL if needed
+      if (!this.currentPresentationUrl && this.rawPresentationUrl) {
+        const officeViewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(this.rawPresentationUrl)}`;
+        this.currentPresentationUrl = this.sanitizer.bypassSecurityTrustResourceUrl(officeViewerUrl);
+      }
+    }
+  }
+
+  openPresentationInNewTab(): void {
+    if (this.rawPresentationUrl) {
+      window.open(this.rawPresentationUrl, '_blank');
     }
   }
 

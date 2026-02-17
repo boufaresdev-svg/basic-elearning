@@ -258,7 +258,7 @@
           <main class="learning-stage">
 
             <!-- Stage / Player Container -->
-            <div class="stage-container" [class.has-video]="showVideo && currentVideoUrl" [class.has-image]="showImage && currentImageUrl">
+            <div class="stage-container" [class.has-video]="showVideo && currentVideoUrl" [class.has-image]="showImage && currentImageUrl" [class.has-presentation]="showPresentation && currentPresentationUrl">
               <!-- Video Player -->
               @if (showVideo && currentVideoUrl) {
                 <div class="video-wrapper">
@@ -327,6 +327,23 @@
                 </div>
               }
 
+              <!-- Presentation Viewer (PowerPoint) -->
+              @if (showPresentation && currentPresentationUrl) {
+                <div class="pptx-wrapper">
+                  <iframe [src]="currentPresentationUrl" frameborder="0" allowfullscreen></iframe>
+                  <div class="pptx-toolbar">
+                    <button (click)="openPresentationInNewTab()" class="btn-open-pdf" title="Ouvrir dans un nouvel onglet">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                      Ouvrir dans un nouvel onglet
+                    </button>
+                  </div>
+                </div>
+              }
+
               <!-- Quiz Active -->
               @if (isQuizActive && currentQuiz && !showVideo && !showPdf) {
                  <div class="quiz-wrapper-embedded">
@@ -376,7 +393,7 @@
               }
 
               <!-- Default / Fallback Content -->
-              @if (!showVideo && !showPdf && !showImage && !isQuizActive && !showQuizResults) {
+              @if (!showVideo && !showPdf && !showImage && !showPresentation && !isQuizActive && !showQuizResults) {
                 <div class="placeholder-stage">
                   <div class="placeholder-icon">
                     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none"><polygon points="5 3 19 12 5 21"></polygon></svg>
@@ -387,6 +404,7 @@
                   <div class="action-buttons">
                     @if (currentModule.video_url) { <button (click)="toggleVideo()" class="btn-ghost-light">Lancer la vidéo</button> }
                     @if (currentModule.pdf_url) { <button (click)="togglePdf()" class="btn-ghost-light">Voir le document</button> }
+                    @if (currentModule.pptx_url) { <button (click)="togglePresentation()" class="btn-ghost-light">Voir la présentation</button> }
                     @if (currentModule.image_url) { <button (click)="toggleImage()" class="btn-ghost-light">Voir l'image</button> }
                     @if (currentModule.quiz) { <button (click)="startQuiz()" class="btn-ghost-light">Démarrer le Quiz</button> }
                   </div>

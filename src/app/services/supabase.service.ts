@@ -32,6 +32,7 @@ export interface CourseContent {
   pdf_url?: string;
   pdf_file?: string;
   image_url?: string;
+  pptx_url?: string;
   duration?: string;
   quiz?: Quiz;
 }
