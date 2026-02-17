@@ -10,7 +10,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 export interface Course {
   id?: string;
   title: string;
-  category: 'thermo' | 'automatisme' | 'process';
+  category: string;
   description: string;
   objectives?: string;
   level?: string;

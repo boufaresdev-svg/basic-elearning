@@ -1075,7 +1075,7 @@ export class FormationApiService {
     return {
       id: formation.idFormation.toString(),
       title: title,
-      category: this.mapCategoryToLocal(typeName),
+      category: categorieName || typeName || '',
       subcategory: sousCategorieName?.toLowerCase(),
       description: description,
       objectives: formation.objectifsFormation || formation.objectifsGlobaux?.join(', '),
@@ -1091,6 +1091,8 @@ export class FormationApiService {
       type: typeName,
       categorie: categorieName,
       sousCategorie: sousCategorieName,
+      idCategorie: formation.idCategorie,
+      idSousCategorie: formation.idSousCategorie,
       prix: formation.prixFormation || formation.prix
     };
   }

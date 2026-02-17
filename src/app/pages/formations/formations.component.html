@@ -102,11 +102,6 @@
         </div>
       }
 
-      <!-- Debug Info (remove after testing) -->
-      <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-size: 12px; border-radius: 4px;">
-        Debug: isLoading={{ isLoadingFormations() }}, courses.length={{ courses.length }}, filtered={{ getFilteredCourses().length }}
-      </div>
-
       @if (!isLoadingFormations()) {
         <div class="results-header">
           <h2>{{ getCategoryLabel(selectedCategory) }}</h2>

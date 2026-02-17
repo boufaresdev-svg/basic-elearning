@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Course } from '../../services/supabase.service';
-import { FormationApiService } from '../../services/formation-api.service';
-import { takeUntil } from 'rxjs';
+import { FormationApiService, CategorieResponse, SousCategorieResponse } from '../../services/formation-api.service';
+import { takeUntil, forkJoin } from 'rxjs';
 import { Subject } from 'rxjs';
 
 interface SidebarCategory {
@@ -37,153 +37,8 @@ export class FormationsComponent implements OnInit, OnDestroy {
       id: 'all',
       label: 'Toutes les formations',
       icon: 'all',
-      subcategories: [], // 'all' usually doesn't need subcategories or can be just a reset
+      subcategories: [],
       isOpen: false
-    },
-    {
-      id: 'thermo',
-      label: 'Thermo Fromage',
-      icon: 'thermo',
-      isOpen: true,
-      subcategories: [
-        { id: 'pasteurisation', label: 'Pasteurisation' },
-        { id: 'sterilisation', label: 'Stérilisation' },
-        { id: 'echangeurs', label: 'Échangeurs Thermiques' }
-      ]
-    },
-    {
-      id: 'automatisme',
-      label: 'Automatisme',
-      icon: 'automatisme',
-      isOpen: true,
-      subcategories: [
-        { id: 'plc', label: 'Automates PLC' },
-        { id: 'hmi', label: 'Interfaces IHM' },
-        { id: 'variateurs', label: 'Variateurs de Vitesse' },
-        { id: 'reseaux', label: 'Réseaux Industriels' }
-      ]
-    },
-    {
-      id: 'process',
-      label: 'Process',
-      icon: 'process',
-      isOpen: true,
-      subcategories: [
-        { id: 'nettoyage', label: 'Nettoyage en Place (NEP)' },
-        { id: 'pompes', label: 'Pompes & Cubage' },
-        { id: 'instrumentation', label: 'Instrumentation de mesure' }
-      ]
-    }
-  ];
-
-  fakeCourses: any[] = [
-    {
-      id: 'fake-1',
-      title: 'Maîtrise de la Pasteurisation',
-      category: 'thermo',
-      subcategory: 'pasteurisation',
-      description: 'Comprendre les principes fondamentaux de la pasteurisation et son application industrielle.',
-      level: 'Intermédiaire',
-      total_duration: 120, // 2h
-      image: 'https://images.unsplash.com/photo-1577935749442-8356391d8487?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Jean Dupont'
-    },
-    {
-      id: 'fake-2',
-      title: 'Les Échangeurs à Plaques',
-      category: 'thermo',
-      subcategory: 'echangeurs',
-      description: 'Maintenance et dimensionnement des échangeurs thermiques à plaques.',
-      level: 'Avancé',
-      total_duration: 180, // 3h
-      image: 'https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Marie Currie'
-    },
-    {
-      id: 'fake-3',
-      title: 'Programmation Siemens S7-1200',
-      category: 'automatisme',
-      subcategory: 'plc',
-      description: 'Initiation à la programmation des automates Siemens série S7-1200 avec TIA Portal.',
-      level: 'Débutant',
-      total_duration: 360, // 6h
-      image: 'https://images.unsplash.com/photo-1531297461136-82lw8e4a9075?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Ahmed Benali'
-    },
-    {
-      id: 'fake-4',
-      title: 'Supervision WinCC Unified',
-      category: 'automatisme',
-      subcategory: 'hmi',
-      description: 'Création d\'interfaces homme-machine modernes avec WinCC Unified.',
-      level: 'Intermédiaire',
-      total_duration: 240, // 4h
-      image: 'https://images.unsplash.com/photo-1610465299993-e6675c9f9efa?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'locked',
-      instructor: 'Ahmed Benali'
-    },
-    {
-      id: 'fake-5',
-      title: 'Pompes Centrifuges : Principes',
-      category: 'process',
-      subcategory: 'pompes',
-      description: 'Fonctionnement, choix et maintenance des pompes centrifuges en industrie agroalimentaire.',
-      level: 'Débutant',
-      total_duration: 90, // 1h30
-      image: 'https://images.unsplash.com/photo-1581092497914-874936d52d9a?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Sophie Martin'
-    },
-    {
-      id: 'fake-6',
-      title: 'Techniques de NEP Avancées',
-      category: 'process',
-      subcategory: 'nettoyage',
-      description: 'Optimisation des cycles de Nettoyage En Place pour réduire la consommation d\'eau et d\'énergie.',
-      level: 'Expert',
-      total_duration: 300, // 5h
-      image: 'https://images.unsplash.com/photo-1590247813693-5541d1c609fd?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'locked',
-      instructor: 'Sophie Martin'
-    },
-     {
-      id: 'fake-7',
-      title: 'Les Capteurs de Température',
-      category: 'process',
-      subcategory: 'instrumentation',
-      description: 'PT100, Thermocouples : choisir et installer le bon capteur.',
-      level: 'Intermédiaire',
-      total_duration: 60,
-      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Jean Dupont'
-    },
-    {
-      id: 'fake-8',
-      title: 'Variateurs de Vitesse ATV320',
-      category: 'automatisme',
-      subcategory: 'variateurs',
-      description: 'Paramétrage et mise en service des variateurs Schneider ATV320.',
-      level: 'Avancé',
-      total_duration: 150,
-      image: 'https://images.unsplash.com/photo-1563770095-39d468f95c83?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'open',
-      instructor: 'Ahmed Benali'
-    },
-     {
-      id: 'fake-9',
-      title: 'Stérilisation UHT',
-      category: 'thermo',
-      subcategory: 'sterilisation',
-      description: 'Procédés de stérilisation Ultra Haute Température.',
-      level: 'Expert',
-      total_duration: 200,
-      image: 'https://images.unsplash.com/photo-1565514020176-13d8a1c90069?q=80&w=2000&auto=format&fit=crop',
-      access_key: 'locked',
-      instructor: 'Marie Currie'
     }
   ];
 
@@ -193,53 +48,95 @@ export class FormationsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Try to load from API first, fallback to fake/Supabase if API fails
-    this.loadFormationsFromApi();
+    this.loadData();
   }
 
-  private loadFormationsFromApi(): void {
+  private loadData(): void {
     this.isLoadingFormations.set(true);
     this.errorMessage.set(null);
 
-    this.formationApiService.getAllFormations()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (formations) => {
-          console.log('[FormationsComponent] Raw API response:', formations);
+    // Load formations, categories, and sous-categories in parallel
+    forkJoin({
+      formations: this.formationApiService.getAllFormations(),
+      categories: this.formationApiService.getAllCategories(),
+      sousCategories: this.formationApiService.getAllSousCategories()
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: ({ formations, categories, sousCategories }) => {
+        console.log('[FormationsComponent] Raw API formations:', formations);
+        console.log('[FormationsComponent] Categories:', categories);
+        console.log('[FormationsComponent] Sous-categories:', sousCategories);
 
-          // Handle case where API returns nested array [[...]] instead of [...]
-          let formationsArray = formations;
-          if (Array.isArray(formations) && formations.length > 0 && Array.isArray(formations[0])) {
-            console.log('[FormationsComponent] Detected nested array, flattening...');
-            formationsArray = formations[0];
-          }
+        // Build sidebar from real categories
+        this.buildSidebarFromApi(categories, sousCategories);
 
-          if (formationsArray && formationsArray.length > 0) {
-            // Map API formations to local course format
-            this.courses = formationsArray.map(f => this.formationApiService.mapFormationToCourse(f));
-            console.log('[FormationsComponent] Mapped courses:', this.courses);
-            console.log('[FormationsComponent] Loaded formations from API:', this.courses.length);
-          } else {
-            console.log('[FormationsComponent] No formations received, falling back');
-            // Fallback to fake data
-            this.loadFakeCourses();
-          }
-          this.isLoadingFormations.set(false);
-          console.log('[FormationsComponent] Loading complete, isLoadingFormations:', this.isLoadingFormations());
-        },
-        error: (error) => {
-          console.error('[FormationsComponent] Error loading from API, falling back to fake data:', error);
-          this.errorMessage.set('Connexion au serveur impossible. Affichage des données de démonstration.');
-          this.loadFakeCourses();
-          this.isLoadingFormations.set(false);
+        // Handle formations
+        let formationsArray = formations;
+        if (Array.isArray(formations) && formations.length > 0 && Array.isArray(formations[0])) {
+          formationsArray = formations[0];
         }
-      });
+
+        if (formationsArray && formationsArray.length > 0) {
+          this.courses = formationsArray.map(f => this.formationApiService.mapFormationToCourse(f));
+          console.log('[FormationsComponent] Mapped courses:', this.courses);
+        } else {
+          console.log('[FormationsComponent] No formations received from API');
+          this.courses = [];
+        }
+
+        this.isLoadingFormations.set(false);
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('[FormationsComponent] Error loading data:', error);
+        this.errorMessage.set('Connexion au serveur impossible.');
+        this.courses = [];
+        this.isLoadingFormations.set(false);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
-  private loadFakeCourses(): void {
-    // Use only fake courses as fallback
-    this.courses = [...this.fakeCourses];
-    console.log('[FormationsComponent] Loaded fake courses as fallback:', this.courses.length);
+  private buildSidebarFromApi(categories: CategorieResponse[], sousCategories: SousCategorieResponse[]): void {
+    // Start with "all" item
+    const sidebar: SidebarCategory[] = [
+      {
+        id: 'all',
+        label: 'Toutes les formations',
+        icon: 'all',
+        subcategories: [],
+        isOpen: false
+      }
+    ];
+
+    // Group sous-categories by their parent category id
+    const subCatMap = new Map<number, SousCategorieResponse[]>();
+    for (const sc of sousCategories) {
+      if (sc.idCategorie) {
+        const existing = subCatMap.get(sc.idCategorie) || [];
+        existing.push(sc);
+        subCatMap.set(sc.idCategorie, existing);
+      }
+    }
+
+    // Build each category entry
+    for (const cat of categories) {
+      const children = subCatMap.get(cat.idCategorie) || [];
+      sidebar.push({
+        id: cat.idCategorie.toString(),
+        label: cat.nomCategorie,
+        icon: 'category',
+        isOpen: true,
+        subcategories: children.map(sc => ({
+          id: sc.idSousCategorie.toString(),
+          label: sc.nomSousCategorie
+        }))
+      });
+    }
+
+    this.sidebarCategories = sidebar;
+    console.log('[FormationsComponent] Built sidebar categories:', this.sidebarCategories);
   }
 
   ngOnDestroy() {
@@ -251,7 +148,6 @@ export class FormationsComponent implements OnInit, OnDestroy {
     if (category.id === 'all') {
       this.selectedCategory = '';
       this.selectedSubCategory = '';
-      // Reset expanded state for others if needed, or keep them
     } else {
       category.isOpen = !category.isOpen;
     }
@@ -273,20 +169,26 @@ export class FormationsComponent implements OnInit, OnDestroy {
   }
 
   getFilteredCourses() {
-    const filtered = this.courses.filter(course => {
-      console.log('[Filter] Checking course:', course.title, 'category:', course.category, 'selectedCategory:', this.selectedCategory);
+    return this.courses.filter(course => {
+      const c = course as any;
 
-      // Filter by Category
-      if (this.selectedCategory && course.category !== this.selectedCategory) {
-        console.log('[Filter] Rejected by category');
-        return false;
+      // Filter by Category (match by id or name)
+      if (this.selectedCategory) {
+        const catId = c.idCategorie?.toString();
+        const catName = c.categorie?.toLowerCase();
+        const selectedLower = this.selectedCategory.toLowerCase();
+        // Match by idCategorie or by nomCategorie
+        if (catId !== this.selectedCategory && catName !== selectedLower) {
+          return false;
+        }
       }
 
-      // Filter by SubCategory (if property exists on course)
+      // Filter by SubCategory
       if (this.selectedSubCategory) {
-        const c = course as any;
-        if (c.subcategory !== this.selectedSubCategory) {
-          console.log('[Filter] Rejected by subcategory');
+        const subId = c.idSousCategorie?.toString();
+        const subName = c.sousCategorie?.toLowerCase();
+        const selectedSubLower = this.selectedSubCategory.toLowerCase();
+        if (subId !== this.selectedSubCategory && subName !== selectedSubLower) {
           return false;
         }
       }
@@ -295,35 +197,25 @@ export class FormationsComponent implements OnInit, OnDestroy {
       if (this.searchTerm) {
         const term = this.searchTerm.toLowerCase();
         if (!course.title.toLowerCase().includes(term)) {
-          console.log('[Filter] Rejected by search term');
           return false;
         }
       }
 
       // Filter by Instructor
       if (this.searchInstructor) {
-        const instructor = (course as any).instructor;
+        const instructor = c.instructor;
         if (!instructor || !instructor.toLowerCase().includes(this.searchInstructor.toLowerCase())) {
-          console.log('[Filter] Rejected by instructor');
           return false;
         }
       }
 
-      console.log('[Filter] Course passed all filters');
       return true;
     });
-
-    console.log('[getFilteredCourses] Total courses:', this.courses.length, 'Filtered:', filtered.length);
-    return filtered;
   }
 
   getCategoryIcon(category: string): string {
-    switch (category) {
-      case 'thermo': return 'thermo';
-      case 'automatisme': return 'automation';
-      case 'process': return 'process';
-      default: return 'course';
-    }
+    // Return a generic icon type — the template handles SVGs
+    return 'course';
   }
 
   getCategoryLabel(category: string): string {
