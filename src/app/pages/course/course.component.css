@@ -1049,9 +1049,9 @@
   display: flex;
   flex: 1;
   width: 100%;
-  height: calc(100vh - 64px); /* Explicit height calculation */
+  height: calc(100vh - 64px);
   overflow: hidden;
-  flex-direction: row; /* Ensure text flows horizontal */
+  flex-direction: row;
 }
 
 /* Left/Center Stage Area */
@@ -1063,25 +1063,38 @@
   position: relative;
   background-color: #fff;
   height: 100%;
-  min-width: 0; /* Important for flex children scrolling */
+  min-width: 0;
 }
 
-/* Video Player Area */
+/* Video/PDF/Image Player Area */
 .stage-container {
   background-color: #1c1d1f;
   width: 100%;
-  flex-shrink: 0; /* Don't shrink */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  max-height: 70%; /* Cap height relative to container */
+  position: relative;
+  min-height: 200px;
 }
 
-.video-wrapper, .pdf-wrapper {
+.video-wrapper {
   width: 100%;
-  height: auto;
   aspect-ratio: 16/9;
-  max-height: 100%;
+  max-height: 70vh;
+}
+
+.pdf-wrapper {
+  width: 100%;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-wrapper iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
 }
 
 /* --- Content Details --- */
@@ -1090,7 +1103,7 @@
   margin: 0 auto;
   width: 100%;
   max-width: 1000px;
-  flex-grow: 1; /* Fill remaining space */
+  flex-grow: 1;
 }
 
 /* --- Sidebar --- */
@@ -1195,50 +1208,10 @@
 .share-btn svg { width: 16px; height: 16px; }
 
 
-/* --- Main Body Grid --- */
-.learning-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden; /* Prevent scrolling on body itself */
-}
-
-/* Left/Center Stage Area */
-.learning-stage {
-  flex: 1; /* Takes up remaining space */
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto; /* Scrollable content inside stage */
-  position: relative;
-  background-color: #fff;
-}
-
-/* Video Player Area */
-.stage-container {
-  background-color: #1c1d1f;
-  position: relative;
-  width: 100%;
-  /* Flex basis or max-height helps prevent it from growing infinitely vertically */
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Stage container modifiers */
 .stage-container.has-video,
 .stage-container.has-image {
   background-color: #000;
-}
-
-.video-wrapper, .pdf-wrapper {
-  width: 100%;
-  max-width: 100%; /* Ensure it fits */
-  aspect-ratio: 16/9;
-  max-height: 70vh; /* Don't be taller than 70% of viewport height */
-  margin: 0 auto;
-}
-.video-wrapper iframe, .pdf-wrapper iframe {
-  width: 100%;
-  height: 100%;
 }
 
 .video-error-state {
@@ -1870,25 +1843,27 @@
 /* Video Player */
 .video-player {
   width: 100%;
+  height: 100%;
   max-height: 70vh;
   background: #000;
-  border-radius: 4px;
+  object-fit: contain;
 }
 
 /* Image Viewer */
 .image-wrapper {
   width: 100%;
-  min-height: 400px;
+  height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #1c1d1f;
   padding: 1rem;
+  overflow: hidden;
 }
 
 .image-viewer {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 100%;
   object-fit: contain;
   border-radius: 4px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -1898,9 +1873,11 @@
 .pdf-toolbar {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: #2d2f31;
   border-top: 1px solid #3e4143;
+  flex-shrink: 0;
 }
 
 .btn-open-pdf {
@@ -1915,10 +1892,12 @@
   cursor: pointer;
   font-size: 0.85rem;
   transition: background 0.2s;
+  text-decoration: none;
 }
 
 .btn-open-pdf:hover {
   background: #5624d0;
+  color: #fff;
 }
 
 .pdf-loading {
@@ -1926,7 +1905,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  flex: 1;
   gap: 1rem;
   color: #aaa;
   font-size: 0.95rem;

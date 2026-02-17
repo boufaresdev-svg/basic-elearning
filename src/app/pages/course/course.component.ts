@@ -93,7 +93,7 @@ export class CourseComponent implements OnInit, OnDestroy {
     console.log('CourseComponent initialized');
     this.isLoading = true;
     this.currentUserId = localStorage.getItem('userEmail') || '';
-    
+
     // Default to not granted - user must be enrolled
     this.isAccessGranted = false;
 
@@ -184,7 +184,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   private checkUserEnrollment(formationId: number): void {
     const userId = localStorage.getItem('userId');
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    
+
     // Admins always have access
     if (isAdmin) {
       console.log('User is admin - granting access');
@@ -192,7 +192,7 @@ export class CourseComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       return;
     }
-    
+
     // If no user logged in, deny access
     if (!userId) {
       console.log('No user logged in - denying access');
@@ -200,16 +200,16 @@ export class CourseComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       return;
     }
-    
+
     console.log('Checking enrollment for user:', userId, 'formation:', formationId);
-    
+
     // Get user's enrolled classes and check if any match this formation
     this.formationApiService.getApprenantClasses(+userId).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response) => {
         console.log('User classes response:', response);
-        
+
         if (response && response.classes && response.classes.length > 0) {
           // Check if any of the user's classes have this formation
           const hasAccess = response.classes.some(classe => {
@@ -217,14 +217,14 @@ export class CourseComponent implements OnInit, OnDestroy {
             console.log('Checking classe:', classe.nom, 'formation id:', classeFormationId);
             return classeFormationId === formationId;
           });
-          
+
           console.log('User has access to this formation:', hasAccess);
           this.isAccessGranted = hasAccess;
         } else {
           console.log('User has no enrolled classes');
           this.isAccessGranted = false;
         }
-        
+
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -719,9 +719,9 @@ export class CourseComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error loading PDF as blob:', err);
-          // Fallback: open in new tab
-          this.currentPdfUrl = null;
+          console.error('Error loading PDF as blob, trying direct URL fallback:', err);
+          // Fallback: try embedding the direct URL
+          this.currentPdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
           this.cdr.detectChanges();
         }
       });
