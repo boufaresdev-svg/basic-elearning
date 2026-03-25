@@ -1,0 +1,105 @@
+{
+  "HOME": {
+    "HERO": {
+      "TITLE": "BIENVENUE CHEZ SMS2I",
+      "SUBTITLE": "SMS2I offre des services complets d'automatisation et de maintenance<br>pour optimiser vos processus industriels.",
+      "BUTTON_PRIMARY": "Découvrir Nos Formations",
+      "BUTTON_OUTLINE": "Nous Contacter"
+    },
+    "FORMATIONS": {
+      "TITLE": "Nos Modalités de Formation",
+      "SUBTITLE": "Des formations certifiantes adaptées à vos besoins et disponibles selon vos préférences",
+      "BADGE": "Populaire",
+      "CTA_TITLE": "Formations Certifiantes Disponibles",
+      "CTA_DESC": "Automatisme, supervision industrielle, nouvelles technologies et plus encore...",
+      "CTA_BUTTON": "Voir Toutes Les Formations"
+    },
+    "PARTNERS": {
+      "TITLE": "Nos Partenaires",
+      "SUBTITLE": "Ils nous accordent leur confiance"
+    },
+    "SERVICES": {
+      "TITLE": "Nos Services",
+      "SUBTITLE": "Des solutions complètes pour vos besoins industriels"
+    },
+    "FEATURES": {
+      "TITLE": "Pourquoi Nous Choisir",
+      "SUBTITLE": "L'excellence au service de votre transformation industrielle"
+    },
+    "CONTACT": {
+      "TITLE": "Prêt à optimiser vos processus ?",
+      "DESC": "Contactez-nous aujourd'hui pour une consultation et découvrez comment SMS2I peut transformer vos opérations industrielles.",
+      "BUTTON": "Demander une Consultation"
+    }
+  },
+  "FEATURE": {
+    "SIEMENS": {
+      "TITLE": "Partenaire Siemens",
+      "DESC": "Intégrateur officiel de SIEMENS SA depuis 2010 et bientôt Solution Partner en Automatisme."
+    },
+    "TEAM": {
+      "TITLE": "Équipe Qualifiée",
+      "DESC": "Une équipe d'experts en électrique, électronique, mécanique, automatisme et informatique industriel."
+    },
+    "GLOBAL": {
+      "TITLE": "Portée Internationale",
+      "DESC": "Collaboration avec des fournisseurs de solutions industrielles en Afrique."
+    },
+    "QUALITY": {
+      "TITLE": "Qualité Certifiée",
+      "DESC": "Processus qualité rigoureux selon les normes internationales en vigueur."
+    },
+    "INNOVATION": {
+      "TITLE": "Solutions Innovantes",
+      "DESC": "Approche créative et solutions sur mesure pour répondre à vos défis industriels."
+    },
+    "SUPPORT": {
+      "TITLE": "Support 24/7",
+      "DESC": "Assistance technique disponible 24 heures sur 24 pour vos urgences industrielles."
+    }
+  },
+  "SERVICE": {
+    "INTEGRATION": {
+      "TITLE": "Intégration des Systèmes",
+      "DESC": "SMS2I assure l'intégration de plusieurs solutions dans les différents domaines industriels : armoires électriques, câblage, réseaux électriques, implémentation de solutions complètes."
+    },
+    "AUTOMATION": {
+      "TITLE": "Automatisme et Engineering Industriel",
+      "DESC": "Automatisme, contrôle et instrumentation électrique, gestion des processus et réseaux industriels intelligents."
+    },
+    "MECHANICAL": {
+      "TITLE": "Construction Mécanique",
+      "DESC": "Conception et Fabrication complète des pièces de rechange mécanique spéciales en interne (Usinage, Ajustage, Montage)."
+    },
+    "INSTRUMENTATION": {
+      "TITLE": "Instrumentation Industrielle",
+      "DESC": "Installation, calibration et supervision d'instruments de mesure pour vos processus de production."
+    },
+    "TRAINING": {
+      "TITLE": "Formation Industrielle",
+      "DESC": "Formations certifiantes pour vos équipes en automatisme, supervision industrielle et nouvelles technologies."
+    },
+    "SUPPORT": {
+      "TITLE": "Support Client de Haute Qualité",
+      "DESC": "Assistance proactive et support technique pour garantir la disponibilité et la performance de vos systèmes."
+    }
+  },
+  "FORMATION_TYPE": {
+    "ON_SITE": {
+      "TITLE": "Formation Sur Site",
+      "DESC": "Nos formateurs se déplacent dans vos locaux pour des formations adaptées à vos équipements et processus."
+    },
+    "INTER": {
+      "TITLE": "Formation Inter-Entreprises",
+      "DESC": "Rejoignez nos sessions de formation avec d'autres professionnels dans nos centres dédiés."
+    },
+    "INTRA": {
+      "TITLE": "Formation Intra-Entreprise",
+      "DESC": "Formations exclusives et personnalisées pour les équipes de votre entreprise."
+    },
+    "ONLINE": {
+      "TITLE": "Formation En Ligne",
+      "DESC": "Accédez à nos formations à distance avec un accompagnement personnalisé et des outils interactifs."
+    }
+  }
+}

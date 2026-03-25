@@ -2,6 +2,8 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessC
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideQuillConfig } from 'ngx-quill';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
 
@@ -15,6 +17,14 @@ export const appConfig: ApplicationConfig = {
       modules: {
         toolbar: true
       }
+    }),
+    provideTranslateService({
+      lang: 'fr',
+      fallbackLang: 'fr',
+      loader: provideTranslateHttpLoader({
+        prefix: '/assets/i18n/',
+        suffix: '.json'
+      })
     })
   ]
 };

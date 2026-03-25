@@ -1,0 +1,105 @@
+{
+  "HOME": {
+    "HERO": {
+      "TITLE": "WELCOME TO SMS2I",
+      "SUBTITLE": "SMS2I offers comprehensive automation and maintenance services<br>to optimize your industrial processes.",
+      "BUTTON_PRIMARY": "Discover Our Courses",
+      "BUTTON_OUTLINE": "Contact Us"
+    },
+    "FORMATIONS": {
+      "TITLE": "Our Training Methods",
+      "SUBTITLE": "Certified courses tailored to your needs and available according to your preferences",
+      "BADGE": "Popular",
+      "CTA_TITLE": "Available Certified Courses",
+      "CTA_DESC": "Automation, industrial supervision, new technologies and more...",
+      "CTA_BUTTON": "View All Courses"
+    },
+    "PARTNERS": {
+      "TITLE": "Our Partners",
+      "SUBTITLE": "They trust us"
+    },
+    "SERVICES": {
+      "TITLE": "Our Services",
+      "SUBTITLE": "Comprehensive solutions for your industrial needs"
+    },
+    "FEATURES": {
+      "TITLE": "Why Choose Us",
+      "SUBTITLE": "Excellence in service of your industrial transformation"
+    },
+    "CONTACT": {
+      "TITLE": "Ready to optimize your processes?",
+      "DESC": "Contact us today for a consultation and discover how SMS2I can transform your industrial operations.",
+      "BUTTON": "Request a Consultation"
+    }
+  },
+  "FEATURE": {
+    "SIEMENS": {
+      "TITLE": "Siemens Partner",
+      "DESC": "Official integrator of SIEMENS SA since 2010 and soon Solution Partner in Automation."
+    },
+    "TEAM": {
+      "TITLE": "Qualified Team",
+      "DESC": "A team of experts in electrical, electronics, mechanics, automation, and industrial computing."
+    },
+    "GLOBAL": {
+      "TITLE": "Global Reach",
+      "DESC": "Collaboration with industrial solution providers in Africa."
+    },
+    "QUALITY": {
+      "TITLE": "Certified Quality",
+      "DESC": "Rigorous quality processes according to current international standards."
+    },
+    "INNOVATION": {
+      "TITLE": "Innovative Solutions",
+      "DESC": "Creative approach and tailor-made solutions to meet your industrial challenges."
+    },
+    "SUPPORT": {
+      "TITLE": "24/7 Support",
+      "DESC": "Technical assistance available 24/7 for your industrial emergencies."
+    }
+  },
+  "SERVICE": {
+    "INTEGRATION": {
+      "TITLE": "Systems Integration",
+      "DESC": "SMS2I integrates multiple solutions in various industrial fields: electrical cabinets, wiring, electrical networks, implementation of complete solutions."
+    },
+    "AUTOMATION": {
+      "TITLE": "Automation and Industrial Engineering",
+      "DESC": "Automation, electrical control and instrumentation, process management, and intelligent industrial networks."
+    },
+    "MECHANICAL": {
+      "TITLE": "Mechanical Construction",
+      "DESC": "Design and complete in-house manufacturing of special mechanical spare parts (Machining, Fitting, Assembly)."
+    },
+    "INSTRUMENTATION": {
+      "TITLE": "Industrial Instrumentation",
+      "DESC": "Installation, calibration, and supervision of measuring instruments for your production processes."
+    },
+    "TRAINING": {
+      "TITLE": "Industrial Training",
+      "DESC": "Certified training for your teams in automation, industrial supervision, and new technologies."
+    },
+    "SUPPORT": {
+      "TITLE": "High Quality Customer Support",
+      "DESC": "Proactive assistance and technical support to ensure the availability and performance of your systems."
+    }
+  },
+  "FORMATION_TYPE": {
+    "ON_SITE": {
+      "TITLE": "On-Site Training",
+      "DESC": "Our trainers come to your premises for training tailored to your equipment and processes."
+    },
+    "INTER": {
+      "TITLE": "Inter-Company Training",
+      "DESC": "Join our training sessions with other professionals in our dedicated centers."
+    },
+    "INTRA": {
+      "TITLE": "Intra-Company Training",
+      "DESC": "Exclusive and personalized training for your company's teams."
+    },
+    "ONLINE": {
+      "TITLE": "Online Training",
+      "DESC": "Access our remote training with personalized support and interactive tools."
+    }
+  }
+}

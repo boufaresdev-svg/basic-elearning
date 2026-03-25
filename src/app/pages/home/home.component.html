@@ -2,14 +2,11 @@
 <section class="hero">
   <div class="hero-overlay"></div>
   <div class="container hero-content">
-    <h1 class="hero-title">BIENVENUE CHEZ SMS2I</h1>
-    <p class="hero-subtitle">
-      SMS2I offre des services complets d'automatisation et de maintenance<br>
-      pour optimiser vos processus industriels.
-    </p>
+    <h1 class="hero-title">{{ 'HOME.HERO.TITLE' | translate }}</h1>
+    <p class="hero-subtitle" [innerHTML]="'HOME.HERO.SUBTITLE' | translate"></p>
     <div class="hero-buttons">
-      <a href="/formations" class="btn btn-primary btn-lg">Découvrir Nos Formations</a>
-      <a href="/contact" class="btn btn-outline btn-lg">Nous Contacter</a>
+      <a href="/formations" class="btn btn-primary btn-lg">{{ 'HOME.HERO.BUTTON_PRIMARY' | translate }}</a>
+      <a href="/contact" class="btn btn-outline btn-lg">{{ 'HOME.HERO.BUTTON_OUTLINE' | translate }}</a>
     </div>
   </div>
 </section>
@@ -18,14 +15,12 @@
 <section class="section formations-section">
   <div class="container">
     <div class="section-header text-center">
-      <h2>Nos Modalités de Formation</h2>
-      <p class="section-subtitle">
-        Des formations certifiantes adaptées à vos besoins et disponibles selon vos préférences
-      </p>
+      <h2>{{ 'HOME.FORMATIONS.TITLE' | translate }}</h2>
+      <p class="section-subtitle">{{ 'HOME.FORMATIONS.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="formations-grid">
-      @for (formation of formationTypes; track formation.title) {
+      @for (formation of formationTypes; track formation.translationKey) {
         <div class="formation-card card" [class.highlight]="formation.highlight">
           <div class="formation-icon" [attr.data-icon]="formation.icon">
             @if (formation.icon === 'on-site') {
@@ -56,19 +51,19 @@
               </svg>
             }
           </div>
-          <h3>{{ formation.title }}</h3>
-          <p>{{ formation.description }}</p>
+          <h3>{{ 'FORMATION_TYPE.' + formation.translationKey + '.TITLE' | translate }}</h3>
+          <p>{{ 'FORMATION_TYPE.' + formation.translationKey + '.DESC' | translate }}</p>
           @if (formation.highlight) {
-            <span class="formation-badge">Populaire</span>
+            <span class="formation-badge">{{ 'HOME.FORMATIONS.BADGE' | translate }}</span>
           }
         </div>
       }
     </div>
 
     <div class="cta-box">
-      <h3>Formations Certifiantes Disponibles</h3>
-      <p>Automatisme, supervision industrielle, nouvelles technologies et plus encore...</p>
-      <a href="/formations" class="btn btn-primary">Voir Toutes Les Formations</a>
+      <h3>{{ 'HOME.FORMATIONS.CTA_TITLE' | translate }}</h3>
+      <p>{{ 'HOME.FORMATIONS.CTA_DESC' | translate }}</p>
+      <a href="/formations" class="btn btn-primary">{{ 'HOME.FORMATIONS.CTA_BUTTON' | translate }}</a>
     </div>
   </div>
 </section>
@@ -77,8 +72,8 @@
 <section class="section services-section">
   <div class="container">
     <div class="section-header text-center">
-      <h2>Nos Partenaires</h2>
-      <p class="section-subtitle">Ils nous accordent leur confiance</p>
+      <h2>{{ 'HOME.PARTNERS.TITLE' | translate }}</h2>
+      <p class="section-subtitle">{{ 'HOME.PARTNERS.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="partners-marquee">
@@ -103,12 +98,12 @@
 <section class="section services-section">
   <div class="container">
     <div class="section-header text-center">
-      <h2>Nos Services</h2>
-      <p class="section-subtitle">Des solutions complètes pour vos besoins industriels</p>
+      <h2>{{ 'HOME.SERVICES.TITLE' | translate }}</h2>
+      <p class="section-subtitle">{{ 'HOME.SERVICES.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="services-grid">
-      @for (service of services; track service.title) {
+      @for (service of services; track service.translationKey) {
         <div class="service-card card">
           <div class="service-icon">
             @switch(service.icon) {
@@ -151,128 +146,88 @@
               }
               @case('support') {
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
               }
             }
           </div>
-          <h3>{{ service.title }}</h3>
-          <p>{{ service.description }}</p>
+          <h3>{{ 'SERVICE.' + service.translationKey + '.TITLE' | translate }}</h3>
+          <p>{{ 'SERVICE.' + service.translationKey + '.DESC' | translate }}</p>
         </div>
       }
     </div>
   </div>
 </section>
 
-<!-- Section Partenaires -->
-<section class="section partners-section">
-<section class="section about-section">
-  <div class="container">
-    <div class="about-content">
-      <div class="about-text">
-        <h2>À propos de SMS2I</h2>
-        <h3 class="about-subtitle">
-          Votre partenaire de confiance pour l'automatisation et la maintenance industrielle
-        </h3>
-        <p>
-          <strong>SMS2I</strong> (Services et Maintenance des Systèmes Informatiques et Industriels)
-          a vu le jour en mai 2008, portée par l'expertise de plusieurs enseignants universitaires.
-          Depuis, nous nous engageons à fournir des solutions sur mesure pour optimiser vos processus industriels.
-        </p>
-        <p>
-          Basés à la zone industrielle de Messaadine (Immeuble Néodeme, Sousse), nous sommes reconnus
-          pour notre rigueur, la qualité de nos interventions et notre capacité à innover en partenariat
-          avec les plus grands (Siemens, Endress+Hauser, etc.).
-        </p>
-        <a href="/about" class="btn btn-secondary">En Savoir Plus</a>
-      </div>
-      <div class="about-image">
-        <div class="about-image-placeholder">
-          <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Section Pourquoi Nous -->
+<!-- Section Features -->
 <section class="section features-section">
   <div class="container">
     <div class="section-header text-center">
-      <h2>Pourquoi choisir SMS2I ?</h2>
-      <p class="section-subtitle">Notre expertise fait la différence</p>
+      <h2>{{ 'HOME.FEATURES.TITLE' | translate }}</h2>
+      <p class="section-subtitle">{{ 'HOME.FEATURES.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="features-grid">
-      @for (feature of features; track feature.title) {
+      @for (feature of features; track feature.translationKey) {
         <div class="feature-card">
-          <div class="feature-icon-wrapper">
-            <div class="feature-icon">
-              @switch(feature.icon) {
-                @case('siemens') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                  </svg>
-                }
-                @case('team') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                }
-                @case('global') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                  </svg>
-                }
-                @case('quality') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <polyline points="9 12 12 15 15 9"></polyline>
-                  </svg>
-                }
-                @case('innovation') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                }
-                @case('24-7') {
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                }
+          <div class="feature-icon">
+            @switch(feature.icon) {
+              @case('siemens') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
               }
-            </div>
+              @case('team') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              }
+              @case('global') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              }
+              @case('quality') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              }
+              @case('innovation') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              }
+              @case('24-7') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              }
+            }
           </div>
-          <h4>{{ feature.title }}</h4>
-          <p>{{ feature.description }}</p>
+          <h4>{{ 'FEATURE.' + feature.translationKey + '.TITLE' | translate }}</h4>
+          <p>{{ 'FEATURE.' + feature.translationKey + '.DESC' | translate }}</p>
         </div>
       }
     </div>
   </div>
 </section>
 
-<!-- Section CTA Final -->
-<section class="section cta-section">
+<!-- Section Contact CTA -->
+<section class="section cta-section text-center">
   <div class="container">
-    <div class="cta-content text-center">
-      <h2>Prêt à Transformer Votre Industrie ?</h2>
-      <p>
-        Contactez-nous dès aujourd'hui pour discuter de vos besoins en automatisation,<br>
-        formation et maintenance industrielle.
-      </p>
-      <div class="cta-buttons">
-        <a href="/contact" class="btn btn-primary btn-lg">Demander Un Devis</a>
-        <a href="/formations" class="btn btn-outline btn-lg">Explorer Les Formations</a>
-      </div>
-    </div>
+    <h2>{{ 'HOME.CONTACT.TITLE' | translate }}</h2>
+    <p>{{ 'HOME.CONTACT.DESC' | translate }}</p>
+    <a href="/contact" class="btn btn-primary btn-lg">{{ 'HOME.CONTACT.BUTTON' | translate }}</a>
   </div>
 </section>
