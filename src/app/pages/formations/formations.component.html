@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="hero-small">
     <div class="container">
-      <h1>Nos Formations Certifiantes</h1>
-      <p>Des formations adaptées à votre niveau et vos besoins professionnels</p>
+      <h1>{{ 'FORMATIONS_PAGE.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'FORMATIONS_PAGE.HERO_SUBTITLE' | translate }}</p>
     </div>
   </section>
 
@@ -11,14 +11,14 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-search-section">
-        <h3>Rechercher</h3>
+        <h3>{{ 'FORMATIONS_PAGE.SEARCH_TITLE' | translate }}</h3>
         <div class="search-group">
-          <label>Formation</label>
+          <label>{{ 'FORMATIONS_PAGE.SEARCH_FORMATION_LABEL' | translate }}</label>
           <div class="input-wrapper">
             <input
               type="text"
               [(ngModel)]="searchTerm"
-              placeholder="Ex: Pasteurisation..."
+              [placeholder]="'FORMATIONS_PAGE.SEARCH_FORMATION_PLACEHOLDER' | translate"
               class="search-input"
             >
             <span class="search-icon">
@@ -31,12 +31,12 @@
         </div>
 
         <div class="search-group">
-          <label>Formateur</label>
+          <label>{{ 'FORMATIONS_PAGE.SEARCH_TRAINER_LABEL' | translate }}</label>
           <div class="input-wrapper">
             <input
               type="text"
               [(ngModel)]="searchInstructor"
-              placeholder="Ex: Jean Dupont..."
+              [placeholder]="'FORMATIONS_PAGE.SEARCH_TRAINER_PLACEHOLDER' | translate"
               class="search-input"
             >
              <span class="search-icon">
@@ -50,7 +50,7 @@
       </div>
 
       <div class="sidebar-header">
-        <h3>Catégories</h3>
+        <h3>{{ 'FORMATIONS_PAGE.CATEGORIES' | translate }}</h3>
       </div>
 
       <div class="sidebar-menu">
@@ -58,7 +58,7 @@
           <div class="category-item" [class.active-category]="selectedCategory === cat.id">
             <div class="category-header" (click)="toggleCategory(cat)">
               <div class="category-label-group" (click)="selectCategory(cat.id); $event.stopPropagation()">
-                <span class="category-name">{{ cat.label }}</span>
+                <span class="category-name">{{ cat.label | translate }}</span>
               </div>
               @if (cat.subcategories.length > 0) {
                 <span class="toggle-icon" [class.open]="cat.isOpen">
@@ -90,7 +90,7 @@
       <!-- Error Message -->
       @if (errorMessage()) {
         <div class="alert alert-warning" style="margin-bottom: 1.5rem; padding: 1rem; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; color: #856404;">
-          <strong>⚠️ Attention:</strong> {{ errorMessage() }}
+          <strong>⚠️ {{ 'FORMATIONS_PAGE.WARNING' | translate }}:</strong> {{ errorMessage() | translate }}
         </div>
       }
 
@@ -98,14 +98,14 @@
       @if (isLoadingFormations()) {
         <div class="loading-state" style="text-align: center; padding: 3rem;">
           <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
-          <p>Chargement des formations...</p>
+          <p>{{ 'FORMATIONS_PAGE.LOADING' | translate }}</p>
         </div>
       }
 
       @if (!isLoadingFormations()) {
         <div class="results-header">
           <h2>{{ getCategoryLabel(selectedCategory) }}</h2>
-          <span class="results-count">{{ getFilteredCourses().length }} formation(s)</span>
+          <span class="results-count">{{ getFilteredCourses().length }} {{ 'FORMATIONS_PAGE.FORMATIONS_COUNT' | translate }}</span>
         </div>
 
         @if (getFilteredCourses().length > 0) {
@@ -149,9 +149,9 @@
                     {{ getCategoryLabel(course.category) }}
                   </span>
                   @if (course.access_key === 'open') {
-                    <span class="access-badge available">✓ Disponible</span>
+                    <span class="access-badge available">✓ {{ 'FORMATIONS_PAGE.AVAILABLE' | translate }}</span>
                   } @else {
-                    <span class="access-badge coming-soon">Bientôt</span>
+                    <span class="access-badge coming-soon">{{ 'FORMATIONS_PAGE.COMING_SOON' | translate }}</span>
                   }
                 </div>
               </div>
@@ -162,7 +162,7 @@
                   <h3 class="formation-title">{{ course.title }}</h3>
                   <div class="formation-meta">
                     <span class="level-badge" [class]="'level-' + (course.level || 'all').toLowerCase().replace(' ', '-')">
-                      {{ course.level || 'Tous niveaux' }}
+                      {{ getLevel(course) }}
                     </span>
                     <span class="duration-badge">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -179,11 +179,11 @@
                 <div class="formation-footer">
                   @if (course.access_key === 'open') {
                     <a [routerLink]="['/course', course.id]" class="btn-primary">
-                      Découvrir
+                      {{ 'FORMATIONS_PAGE.DISCOVER' | translate }}
                     </a>
                   } @else {
                     <button class="btn-secondary" disabled>
-                      Bientôt disponible
+                      {{ 'FORMATIONS_PAGE.SOON_AVAILABLE' | translate }}
                     </button>
                   }
                 </div>
@@ -199,8 +199,8 @@
                 <path d="m21 21-4.35-4.35"></path>
               </svg>
             </div>
-            <h2>Aucune formation trouvée</h2>
-            <p>Essayez de sélectionner une autre catégorie.</p>
+            <h2>{{ 'FORMATIONS_PAGE.EMPTY_TITLE' | translate }}</h2>
+            <p>{{ 'FORMATIONS_PAGE.EMPTY_SUBTITLE' | translate }}</p>
           </div>
         }
       }
@@ -211,11 +211,11 @@
   <section class="section cta-section">
     <div class="container">
       <div class="cta-content text-center">
-        <h2>Besoin d'Informations Supplémentaires ?</h2>
-        <p>Contactez-nous pour discuter de vos besoins de formation et recevoir un devis personnalisé.</p>
+        <h2>{{ 'FORMATIONS_PAGE.CTA_TITLE' | translate }}</h2>
+        <p>{{ 'FORMATIONS_PAGE.CTA_SUBTITLE' | translate }}</p>
         <div class="cta-buttons">
-          <a routerLink="/contact" class="btn btn-primary btn-lg">Nous Contacter</a>
-          <a routerLink="/login" class="btn btn-secondary btn-lg">Connexion Étudiant</a>
+          <a routerLink="/contact" class="btn btn-primary btn-lg">{{ 'FORMATIONS_PAGE.CTA_CONTACT' | translate }}</a>
+          <a routerLink="/login" class="btn btn-secondary btn-lg">{{ 'FORMATIONS_PAGE.CTA_LOGIN' | translate }}</a>
         </div>
       </div>
     </div>

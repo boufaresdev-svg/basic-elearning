@@ -63,6 +63,33 @@
   font-weight: 600;
 }
 
+.language-item {
+  display: flex;
+  align-items: center;
+}
+
+.language-select {
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  color: var(--color-gray-dark);
+  border-radius: var(--border-radius-md);
+  padding: 0.35rem 0.6rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .btn-nav {
   padding: var(--spacing-sm) var(--spacing-lg);
   font-size: var(--font-size-sm);
@@ -138,6 +165,15 @@
 
   .navbar-menu li a {
     padding: var(--spacing-md);
+  }
+
+  .language-item {
+    width: 100%;
+  }
+
+  .language-select {
+    width: 100%;
+    padding: 0.6rem;
   }
 
   .btn-nav {

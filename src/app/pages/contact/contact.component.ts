@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.css'
 })
@@ -44,26 +45,26 @@ export class ContactComponent {
 
   private validateForm(): boolean {
     if (!this.contactForm.name.trim()) {
-      this.submitError = 'Le nom est requis';
+      this.submitError = 'CONTACT_PAGE.ERROR_NAME_REQUIRED';
       return false;
     }
     if (!this.contactForm.email.trim()) {
-      this.submitError = 'L\'email est requis';
+      this.submitError = 'CONTACT_PAGE.ERROR_EMAIL_REQUIRED';
       return false;
     }
     if (!this.contactForm.subject.trim()) {
-      this.submitError = 'Le sujet est requis';
+      this.submitError = 'CONTACT_PAGE.ERROR_SUBJECT_REQUIRED';
       return false;
     }
     if (!this.contactForm.message.trim()) {
-      this.submitError = 'Le message est requis';
+      this.submitError = 'CONTACT_PAGE.ERROR_MESSAGE_REQUIRED';
       return false;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.contactForm.email)) {
-      this.submitError = 'Veuillez entrer un email valide';
+      this.submitError = 'CONTACT_PAGE.ERROR_EMAIL_INVALID';
       return false;
     }
 

@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormationApiService, Classe, Apprenant } from '../../services/formation-api.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface EnrolledCourse {
   classeId: number;
@@ -39,7 +40,7 @@ interface UserProfile {
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.css'
 })
@@ -63,7 +64,8 @@ export class UserDashboardComponent implements OnInit {
   constructor(
     private formationApi: FormationApiService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit() {
@@ -84,7 +86,9 @@ export class UserDashboardComponent implements OnInit {
         const apprenant: Apprenant = JSON.parse(apprenantData);
         if (apprenant.dateInscription || apprenant.createdAt) {
           const date = new Date(apprenant.dateInscription || apprenant.createdAt || '');
-          this.userProfile.memberSince = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+          const currentLang = localStorage.getItem('app_language') || 'fr';
+          const locale = currentLang === 'ar' ? 'ar' : currentLang === 'en' ? 'en-US' : 'fr-FR';
+          this.userProfile.memberSince = date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
         }
       } catch (e) {}
     }
@@ -153,7 +157,7 @@ export class UserDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading enrolled courses:', error);
-        this.errorMessage = 'Erreur lors du chargement de vos cours';
+        this.errorMessage = 'DASHBOARD_PAGE.ERROR_LOADING_COURSES';
         this.isLoading = false;
         this.cdr.markForCheck();
       }
@@ -185,7 +189,8 @@ export class UserDashboardComponent implements OnInit {
 
   downloadCertificate(certificate: Certificate) {
     if (certificate.downloadUrl) {
-      alert(`Téléchargement du certificat ${certificate.certificateId}`);
+      const message = this.translateService.instant('DASHBOARD_PAGE.DOWNLOADING_CERTIFICATE');
+      alert(`${message} ${certificate.certificateId}`);
     }
   }
 }

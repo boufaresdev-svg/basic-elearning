@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal } from '@angula
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Course } from '../../services/supabase.service';
 import { FormationApiService, CategorieResponse, SousCategorieResponse } from '../../services/formation-api.service';
 import { takeUntil, forkJoin } from 'rxjs';
@@ -18,7 +19,7 @@ interface SidebarCategory {
 @Component({
   selector: 'app-formations',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, TranslateModule],
   templateUrl: './formations.component.html',
   styleUrl: './formations.component.css'
 })
@@ -35,7 +36,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
   sidebarCategories: SidebarCategory[] = [
     {
       id: 'all',
-      label: 'Toutes les formations',
+      label: 'FORMATIONS_PAGE.ALL_FORMATIONS',
       icon: 'all',
       subcategories: [],
       isOpen: false
@@ -44,7 +45,8 @@ export class FormationsComponent implements OnInit, OnDestroy {
 
   constructor(
     private formationApiService: FormationApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit() {
@@ -90,7 +92,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('[FormationsComponent] Error loading data:', error);
-        this.errorMessage.set('Connexion au serveur impossible.');
+        this.errorMessage.set('FORMATIONS_PAGE.ERROR_SERVER');
         this.courses = [];
         this.isLoadingFormations.set(false);
         this.cdr.markForCheck();
@@ -103,7 +105,7 @@ export class FormationsComponent implements OnInit, OnDestroy {
     const sidebar: SidebarCategory[] = [
       {
         id: 'all',
-        label: 'Toutes les formations',
+        label: 'FORMATIONS_PAGE.ALL_FORMATIONS',
         icon: 'all',
         subcategories: [],
         isOpen: false
@@ -219,13 +221,15 @@ export class FormationsComponent implements OnInit, OnDestroy {
   }
 
   getCategoryLabel(category: string): string {
-    if (category === 'all' || category === '') return 'Toutes les formations';
+    if (category === 'all' || category === '') {
+      return this.translateService.instant('FORMATIONS_PAGE.ALL_FORMATIONS');
+    }
     const cat = this.sidebarCategories.find(c => c.id === category);
     return cat ? cat.label : category;
   }
 
   formatDuration(totalDuration?: number): string {
-    if (!totalDuration) return 'Non spécifié';
+    if (!totalDuration) return this.translateService.instant('FORMATIONS_PAGE.NOT_SPECIFIED');
     if (totalDuration < 60) return `${totalDuration}m`;
     const hours = Math.floor(totalDuration / 60);
     const mins = totalDuration % 60;
@@ -233,19 +237,23 @@ export class FormationsComponent implements OnInit, OnDestroy {
 
     // Calculate days (6 hours per day)
     const days = Math.ceil(hours / 6);
-    const dayStr = days === 1 ? '1 jour' : `${days} jours`;
+    const dayStr = days === 1
+      ? `1 ${this.translateService.instant('FORMATIONS_PAGE.DAY')}`
+      : `${days} ${this.translateService.instant('FORMATIONS_PAGE.DAYS')}`;
 
     return `${timeStr} (${dayStr})`;
   }
 
   getLevel(course: Course): string {
-    return course.level || 'Tous niveaux';
+    return course.level || this.translateService.instant('FORMATIONS_PAGE.ALL_LEVELS');
   }
 
   getDurationInDays(totalDuration?: number): string {
-    if (!totalDuration) return 'Non spécifié';
+    if (!totalDuration) return this.translateService.instant('FORMATIONS_PAGE.NOT_SPECIFIED');
     const hours = Math.floor(totalDuration / 60);
     const days = Math.ceil(hours / 6);
-    return days === 1 ? '1 jour' : `${days} jours`;
+    return days === 1
+      ? `1 ${this.translateService.instant('FORMATIONS_PAGE.DAY')}`
+      : `${days} ${this.translateService.instant('FORMATIONS_PAGE.DAYS')}`;
   }
 }

@@ -2,8 +2,8 @@
   <!-- Hero Section -->
   <section class="hero-small">
     <div class="container">
-      <h1>Contactez-Nous</h1>
-      <p>Nous sommes là pour répondre à vos questions et vous accompagner dans vos projets de formation</p>
+      <h1>{{ 'CONTACT_PAGE.HERO_TITLE' | translate }}</h1>
+      <p>{{ 'CONTACT_PAGE.HERO_SUBTITLE' | translate }}</p>
     </div>
   </section>
 
@@ -13,10 +13,9 @@
       <div class="contact-grid">
         <!-- Contact Information -->
         <div class="contact-info">
-          <h2>Informations de Contact</h2>
+          <h2>{{ 'CONTACT_PAGE.INFO_TITLE' | translate }}</h2>
           <p class="contact-intro">
-            SMS2I est votre partenaire privilégié pour les formations et services industriels.
-            N'hésitez pas à nous contacter pour toute question ou demande d'information.
+            {{ 'CONTACT_PAGE.INFO_INTRO' | translate }}
           </p>
 
           <div class="contact-details">
@@ -27,7 +26,7 @@
                 </svg>
               </div>
               <div class="contact-text">
-                <h3>Téléphone</h3>
+                <h3>{{ 'CONTACT_PAGE.PHONE_LABEL' | translate }}</h3>
                 <p><a href="tel:+21673284160">+216 73 284 160</a></p>
               </div>
             </div>
@@ -40,7 +39,7 @@
                 </svg>
               </div>
               <div class="contact-text">
-                <h3>Email</h3>
+                <h3>{{ 'CONTACT_PAGE.EMAIL_LABEL' | translate }}</h3>
                 <p><a href="mailto:contact@sms2i.com.tn">contact@sms2i.com.tn</a></p>
               </div>
             </div>
@@ -53,8 +52,8 @@
                 </svg>
               </div>
               <div class="contact-text">
-                <h3>Adresse</h3>
-                <p>Rue 14 janvier (GP1), Imm Neodeme 1ere Etage, Messadine 4013, Sousse</p>
+                <h3>{{ 'CONTACT_PAGE.ADDRESS_LABEL' | translate }}</h3>
+                <p>{{ 'CONTACT_PAGE.ADDRESS_VALUE' | translate }}</p>
               </div>
             </div>
 
@@ -66,22 +65,22 @@
                 </svg>
               </div>
               <div class="contact-text">
-                <h3>Horaires</h3>
-                <p>Lun - Ven: 8h00 - 17h00</p>
-                <p>Sam: 8h00 - 12h00</p>
+                <h3>{{ 'CONTACT_PAGE.HOURS_LABEL' | translate }}</h3>
+                <p>{{ 'CONTACT_PAGE.HOURS_WEEK' | translate }}</p>
+                <p>{{ 'CONTACT_PAGE.HOURS_SAT' | translate }}</p>
               </div>
             </div>
           </div>
 
           <!-- Services Offerts -->
           <div class="services-info">
-            <h3>Nos Services</h3>
+            <h3>{{ 'CONTACT_PAGE.SERVICES_TITLE' | translate }}</h3>
             <ul class="services-list">
-              <li>Formations en Thermodynamique Fromage</li>
-              <li>Formations en Automatisme Industriel</li>
-              <li>Formations Process Industriels</li>
-              <li>Consulting et Accompagnement</li>
-              <li>Formation sur mesure en entreprise</li>
+              <li>{{ 'CONTACT_PAGE.SERVICE_1' | translate }}</li>
+              <li>{{ 'CONTACT_PAGE.SERVICE_2' | translate }}</li>
+              <li>{{ 'CONTACT_PAGE.SERVICE_3' | translate }}</li>
+              <li>{{ 'CONTACT_PAGE.SERVICE_4' | translate }}</li>
+              <li>{{ 'CONTACT_PAGE.SERVICE_5' | translate }}</li>
             </ul>
           </div>
         </div>
@@ -89,14 +88,14 @@
         <!-- Contact Form -->
         <div class="contact-form-wrapper">
           <div class="contact-form card">
-            <h2>Envoyez-nous un Message</h2>
+            <h2>{{ 'CONTACT_PAGE.FORM_TITLE' | translate }}</h2>
 
             @if (submitSuccess) {
               <div class="alert alert-success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <polyline points="20,6 9,17 4,12"></polyline>
                 </svg>
-                Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.
+                {{ 'CONTACT_PAGE.SUCCESS_MESSAGE' | translate }}
               </div>
             }
 
@@ -107,79 +106,79 @@
                   <line x1="15" y1="9" x2="9" y2="15"></line>
                   <line x1="9" y1="9" x2="15" y2="15"></line>
                 </svg>
-                {{ submitError }}
+                {{ submitError | translate }}
               </div>
             }
 
             <form (ngSubmit)="onSubmit()" #contactFormRef="ngForm">
               <div class="form-row">
                 <div class="form-group">
-                  <label for="name">Nom Complet *</label>
+                  <label for="name">{{ 'CONTACT_PAGE.NAME_LABEL' | translate }} *</label>
                   <input
                     type="text"
                     id="name"
                     name="name"
                     [(ngModel)]="contactForm.name"
-                    placeholder="Votre nom complet"
+                    [placeholder]="'CONTACT_PAGE.NAME_PLACEHOLDER' | translate"
                     required>
                 </div>
                 <div class="form-group">
-                  <label for="email">Email *</label>
+                  <label for="email">{{ 'CONTACT_PAGE.EMAIL_FORM_LABEL' | translate }} *</label>
                   <input
                     type="email"
                     id="email"
                     name="email"
                     [(ngModel)]="contactForm.email"
-                    placeholder="votre@email.com"
+                    [placeholder]="'CONTACT_PAGE.EMAIL_PLACEHOLDER' | translate"
                     required>
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="phone">Téléphone</label>
+                  <label for="phone">{{ 'CONTACT_PAGE.PHONE_FORM_LABEL' | translate }}</label>
                   <input
                     type="tel"
                     id="phone"
                     name="phone"
                     [(ngModel)]="contactForm.phone"
-                    placeholder="+216 XX XXX XXX">
+                    [placeholder]="'CONTACT_PAGE.PHONE_PLACEHOLDER' | translate">
                 </div>
                 <div class="form-group">
-                  <label for="company">Entreprise</label>
+                  <label for="company">{{ 'CONTACT_PAGE.COMPANY_LABEL' | translate }}</label>
                   <input
                     type="text"
                     id="company"
                     name="company"
                     [(ngModel)]="contactForm.company"
-                    placeholder="Nom de votre entreprise">
+                    [placeholder]="'CONTACT_PAGE.COMPANY_PLACEHOLDER' | translate">
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="subject">Sujet *</label>
+                <label for="subject">{{ 'CONTACT_PAGE.SUBJECT_LABEL' | translate }} *</label>
                 <select
                   id="subject"
                   name="subject"
                   [(ngModel)]="contactForm.subject"
                   required>
-                  <option value="">Sélectionner un sujet</option>
-                  <option value="formation-thermo">Formation Thermodynamique Fromage</option>
-                  <option value="formation-auto">Formation Automatisme</option>
-                  <option value="formation-process">Formation Process</option>
-                  <option value="devis">Demande de devis</option>
-                  <option value="partenariat">Partenariat</option>
-                  <option value="autre">Autre</option>
+                  <option value="">{{ 'CONTACT_PAGE.SUBJECT_PLACEHOLDER' | translate }}</option>
+                  <option value="formation-thermo">{{ 'CONTACT_PAGE.SUBJECT_THERMO' | translate }}</option>
+                  <option value="formation-auto">{{ 'CONTACT_PAGE.SUBJECT_AUTO' | translate }}</option>
+                  <option value="formation-process">{{ 'CONTACT_PAGE.SUBJECT_PROCESS' | translate }}</option>
+                  <option value="devis">{{ 'CONTACT_PAGE.SUBJECT_QUOTE' | translate }}</option>
+                  <option value="partenariat">{{ 'CONTACT_PAGE.SUBJECT_PARTNERSHIP' | translate }}</option>
+                  <option value="autre">{{ 'CONTACT_PAGE.SUBJECT_OTHER' | translate }}</option>
                 </select>
               </div>
 
               <div class="form-group">
-                <label for="message">Message *</label>
+                <label for="message">{{ 'CONTACT_PAGE.MESSAGE_LABEL' | translate }} *</label>
                 <textarea
                   id="message"
                   name="message"
                   [(ngModel)]="contactForm.message"
-                  placeholder="Décrivez votre demande ou vos questions..."
+                  [placeholder]="'CONTACT_PAGE.MESSAGE_PLACEHOLDER' | translate"
                   rows="5"
                   required></textarea>
               </div>
@@ -190,9 +189,9 @@
                 [disabled]="isSubmitting || !contactFormRef.form.valid">
                 @if (isSubmitting) {
                   <span class="loading-spinner"></span>
-                  Envoi en cours...
+                  {{ 'CONTACT_PAGE.SENDING' | translate }}
                 } @else {
-                  Envoyer le Message
+                  {{ 'CONTACT_PAGE.SUBMIT' | translate }}
                 }
               </button>
             </form>
@@ -205,23 +204,23 @@
   <!-- FAQ Section -->
   <section class="section faq-section">
     <div class="container">
-      <h2 class="text-center">Questions Fréquentes</h2>
+      <h2 class="text-center">{{ 'CONTACT_PAGE.FAQ_TITLE' | translate }}</h2>
       <div class="faq-grid">
         <div class="faq-item">
-          <h3>Comment s'inscrire à une formation ?</h3>
-          <p>Vous pouvez consulter nos formations disponibles sur la page "Formations" et nous contacter pour plus d'informations sur les modalités d'inscription.</p>
+          <h3>{{ 'CONTACT_PAGE.FAQ_Q1' | translate }}</h3>
+          <p>{{ 'CONTACT_PAGE.FAQ_A1' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>Proposez-vous des formations sur mesure ?</h3>
-          <p>Oui, nous adaptons nos programmes de formation aux besoins spécifiques de votre entreprise. Contactez-nous pour discuter de vos besoins.</p>
+          <h3>{{ 'CONTACT_PAGE.FAQ_Q2' | translate }}</h3>
+          <p>{{ 'CONTACT_PAGE.FAQ_A2' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>Quels sont vos tarifs ?</h3>
-          <p>Nos tarifs varient selon le type et la durée de formation. N'hésitez pas à nous contacter pour recevoir un devis personnalisé.</p>
+          <h3>{{ 'CONTACT_PAGE.FAQ_Q3' | translate }}</h3>
+          <p>{{ 'CONTACT_PAGE.FAQ_A3' | translate }}</p>
         </div>
         <div class="faq-item">
-          <h3>Délivrez-vous des certificats ?</h3>
-          <p>Oui, toutes nos formations certifiantes incluent la délivrance d'un certificat de formation reconnu dans l'industrie.</p>
+          <h3>{{ 'CONTACT_PAGE.FAQ_Q4' | translate }}</h3>
+          <p>{{ 'CONTACT_PAGE.FAQ_A4' | translate }}</p>
         </div>
       </div>
     </div>

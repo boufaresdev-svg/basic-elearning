@@ -7,10 +7,10 @@
         <h3>{{ userProfile.name }}</h3>
         <p class="user-email">{{ userProfile.email }}</p>
         @if (userProfile.matricule) {
-          <p class="user-matricule">Matricule: {{ userProfile.matricule }}</p>
+          <p class="user-matricule">{{ 'DASHBOARD_PAGE.MATRICULE' | translate }}: {{ userProfile.matricule }}</p>
         }
         @if (userProfile.memberSince) {
-          <span class="member-badge">Membre depuis {{ userProfile.memberSince }}</span>
+          <span class="member-badge">{{ 'DASHBOARD_PAGE.MEMBER_SINCE' | translate }} {{ userProfile.memberSince }}</span>
         }
       </div>
 
@@ -23,7 +23,7 @@
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
           </svg>
-          Mes Cours
+          {{ 'DASHBOARD_PAGE.NAV_MY_COURSES' | translate }}
         </button>
 
         <button
@@ -35,7 +35,7 @@
             <path d="M12 2a10 10 0 0 0-9.95 9h4.53a9.93 9.93 0 0 1 5.42-5.42V2z"></path>
             <path d="M12 22a10 10 0 0 0 9.95-9h-4.53a9.93 9.93 0 0 1-5.42 5.42V22z"></path>
           </svg>
-          Certifications
+          {{ 'DASHBOARD_PAGE.NAV_CERTIFICATIONS' | translate }}
         </button>
 
         <button
@@ -46,18 +46,18 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
-          Profil
+          {{ 'DASHBOARD_PAGE.NAV_PROFILE' | translate }}
         </button>
       </nav>
 
       <div class="dashboard-stats">
         <div class="stat-item">
           <span class="stat-number">{{ userProfile.totalClasses }}</span>
-          <span class="stat-label">Cours inscrits</span>
+          <span class="stat-label">{{ 'DASHBOARD_PAGE.ENROLLED_COURSES' | translate }}</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">{{ certificates.length }}</span>
-          <span class="stat-label">Certificats</span>
+          <span class="stat-label">{{ 'DASHBOARD_PAGE.CERTIFICATES' | translate }}</span>
         </div>
       </div>
     </aside>
@@ -68,20 +68,20 @@
       @if (activeTab === 'courses') {
         <div class="content-section">
           <div class="section-header">
-            <h2>Mes Cours Inscrits</h2>
+            <h2>{{ 'DASHBOARD_PAGE.MY_ENROLLED_COURSES' | translate }}</h2>
             <a routerLink="/formations" class="btn btn-primary">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
-              Parcourir les cours
+              {{ 'DASHBOARD_PAGE.BROWSE_COURSES' | translate }}
             </a>
           </div>
 
           @if (isLoading) {
             <div class="loading-state">
               <div class="spinner"></div>
-              <p>Chargement de vos cours...</p>
+              <p>{{ 'DASHBOARD_PAGE.LOADING_COURSES' | translate }}</p>
             </div>
           } @else if (errorMessage) {
             <div class="error-state">
@@ -90,8 +90,8 @@
                 <line x1="15" y1="9" x2="9" y2="15"></line>
                 <line x1="9" y1="9" x2="15" y2="15"></line>
               </svg>
-              <h3>{{ errorMessage }}</h3>
-              <p>Veuillez réessayer plus tard.</p>
+              <h3>{{ errorMessage | translate }}</h3>
+              <p>{{ 'DASHBOARD_PAGE.RETRY_LATER' | translate }}</p>
             </div>
           } @else if (enrolledCourses.length === 0) {
             <div class="empty-state">
@@ -99,9 +99,9 @@
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
               </svg>
-              <h3>Aucun cours inscrit</h3>
-              <p>Vous n'êtes inscrit à aucun cours pour le moment.</p>
-              <a routerLink="/formations" class="btn btn-primary">Découvrir les formations</a>
+              <h3>{{ 'DASHBOARD_PAGE.NO_ENROLLED_COURSES' | translate }}</h3>
+              <p>{{ 'DASHBOARD_PAGE.NO_ENROLLED_COURSES_DESC' | translate }}</p>
+              <a routerLink="/formations" class="btn btn-primary">{{ 'DASHBOARD_PAGE.DISCOVER_FORMATIONS' | translate }}</a>
             </div>
           } @else {
             <div class="courses-grid">
@@ -110,9 +110,9 @@
                   <div class="course-image" [style.background-image]="'url(' + course.formationImage + ')'">
                     <span class="course-category">{{ course.classeName }}</span>
                     @if (course.isActive) {
-                      <span class="course-status active">Actif</span>
+                      <span class="course-status active">{{ 'DASHBOARD_PAGE.ACTIVE' | translate }}</span>
                     } @else {
-                      <span class="course-status inactive">Inactif</span>
+                      <span class="course-status inactive">{{ 'DASHBOARD_PAGE.INACTIVE' | translate }}</span>
                     }
                   </div>
                   <div class="course-content">
@@ -126,7 +126,7 @@
                           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                           <circle cx="9" cy="7" r="4"></circle>
                         </svg>
-                        {{ course.nombreInscrits }} inscrits
+                        {{ course.nombreInscrits }} {{ 'DASHBOARD_PAGE.ENROLLED' | translate }}
                       </span>
                       @if (course.planFormation) {
                         <span class="meta-item">
@@ -138,9 +138,9 @@
                         </span>
                       }
                     </div>
-                    <p class="classe-code">Code: {{ course.classeCode }}</p>
+                    <p class="classe-code">{{ 'DASHBOARD_PAGE.CODE' | translate }}: {{ course.classeCode }}</p>
                     <button class="btn btn-outline btn-block" (click)="openCourse(course); $event.stopPropagation()">
-                      Accéder au cours
+                      {{ 'DASHBOARD_PAGE.ACCESS_COURSE' | translate }}
                     </button>
                   </div>
                 </div>
@@ -154,8 +154,8 @@
       @if (activeTab === 'certificates') {
         <div class="content-section">
           <div class="section-header">
-            <h2>Mes Certifications</h2>
-            <p>Certificats obtenus et en cours</p>
+            <h2>{{ 'DASHBOARD_PAGE.MY_CERTIFICATIONS' | translate }}</h2>
+            <p>{{ 'DASHBOARD_PAGE.CERTIFICATES_DESC' | translate }}</p>
           </div>
 
           @if (certificates.length === 0) {
@@ -164,8 +164,8 @@
                 <circle cx="12" cy="10" r="3"></circle>
                 <path d="M12 2a10 10 0 0 0-9.95 9h4.53a9.93 9.93 0 0 1 5.42-5.42V2z"></path>
               </svg>
-              <h3>Aucun certificat</h3>
-              <p>Complétez des cours pour obtenir des certificats.</p>
+              <h3>{{ 'DASHBOARD_PAGE.NO_CERTIFICATE' | translate }}</h3>
+              <p>{{ 'DASHBOARD_PAGE.NO_CERTIFICATE_DESC' | translate }}</p>
             </div>
           } @else {
             <div class="certificates-grid">
@@ -188,12 +188,12 @@
                     <h3>{{ cert.courseName }}</h3>
                     <p class="certificate-id">{{ cert.certificateId }}</p>
                     @if (cert.issueDate) {
-                      <p class="certificate-date">Délivré le {{ cert.issueDate }}</p>
+                      <p class="certificate-date">{{ 'DASHBOARD_PAGE.ISSUED_ON' | translate }} {{ cert.issueDate }}</p>
                     }
                     @if (cert.status === 'completed') {
-                      <span class="status-badge completed">Complété</span>
+                      <span class="status-badge completed">{{ 'DASHBOARD_PAGE.COMPLETED' | translate }}</span>
                     } @else {
-                      <span class="status-badge in-progress">En cours</span>
+                      <span class="status-badge in-progress">{{ 'DASHBOARD_PAGE.IN_PROGRESS' | translate }}</span>
                     }
                   </div>
                   @if (cert.status === 'completed') {
@@ -203,7 +203,7 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
-                      Télécharger
+                      {{ 'DASHBOARD_PAGE.DOWNLOAD' | translate }}
                     </button>
                   }
                 </div>
@@ -217,15 +217,15 @@
       @if (activeTab === 'profile') {
         <div class="content-section">
           <div class="section-header">
-            <h2>Mon Profil</h2>
+            <h2>{{ 'DASHBOARD_PAGE.MY_PROFILE' | translate }}</h2>
           </div>
 
           <div class="profile-content">
             <div class="profile-section">
-              <h3>Informations Personnelles</h3>
+              <h3>{{ 'DASHBOARD_PAGE.PERSONAL_INFO' | translate }}</h3>
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Nom complet</label>
+                  <label>{{ 'DASHBOARD_PAGE.FULL_NAME' | translate }}</label>
                   <p>{{ userProfile.name }}</p>
                 </div>
                 <div class="info-item">
@@ -234,25 +234,25 @@
                 </div>
                 @if (userProfile.matricule) {
                   <div class="info-item">
-                    <label>Matricule</label>
+                    <label>{{ 'DASHBOARD_PAGE.MATRICULE' | translate }}</label>
                     <p>{{ userProfile.matricule }}</p>
                   </div>
                 }
                 @if (userProfile.memberSince) {
                   <div class="info-item">
-                    <label>Membre depuis</label>
+                    <label>{{ 'DASHBOARD_PAGE.MEMBER_SINCE' | translate }}</label>
                     <p>{{ userProfile.memberSince }}</p>
                   </div>
                 }
                 <div class="info-item">
-                  <label>Statut</label>
-                  <p><span class="status-badge active">Actif</span></p>
+                  <label>{{ 'DASHBOARD_PAGE.STATUS' | translate }}</label>
+                  <p><span class="status-badge active">{{ 'DASHBOARD_PAGE.ACTIVE' | translate }}</span></p>
                 </div>
               </div>
             </div>
 
             <div class="profile-section">
-              <h3>Statistiques</h3>
+              <h3>{{ 'DASHBOARD_PAGE.STATISTICS' | translate }}</h3>
               <div class="stats-grid">
                 <div class="stat-card">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -261,7 +261,7 @@
                   </svg>
                   <div>
                     <h4>{{ userProfile.totalClasses }}</h4>
-                    <p>Cours inscrits</p>
+                    <p>{{ 'DASHBOARD_PAGE.ENROLLED_COURSES' | translate }}</p>
                   </div>
                 </div>
                 <div class="stat-card">
@@ -271,7 +271,7 @@
                   </svg>
                   <div>
                     <h4>{{ certificates.length }}</h4>
-                    <p>Certificats</p>
+                    <p>{{ 'DASHBOARD_PAGE.CERTIFICATES' | translate }}</p>
                   </div>
                 </div>
               </div>

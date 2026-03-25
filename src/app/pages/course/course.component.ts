@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SupabaseService, Course, CourseContent, Quiz, QuizQuestion, DiscussionQuestion, DiscussionReply } from '../../services/supabase.service';
 import { FormationApiService } from '../../services/formation-api.service';
 import { environment } from '../../../environments/environment';
@@ -23,7 +24,7 @@ export interface ContentGroup {
 @Component({
   selector: 'app-course',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css'
 })
@@ -89,7 +90,8 @@ export class CourseComponent implements OnInit, OnDestroy {
     private formationApiService: FormationApiService,
     private http: HttpClient,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translateService: TranslateService
   ) {}
 
   ngOnInit() {
@@ -166,7 +168,7 @@ export class CourseComponent implements OnInit, OnDestroy {
             this.checkUserEnrollment(+course.id!);
           } else {
             console.log('Course is null/undefined');
-            this.errorMessage = 'Cours introuvable';
+            this.errorMessage = 'COURSE_PAGE.ERROR_NOT_FOUND';
           }
 
           // Manually trigger change detection
@@ -176,7 +178,7 @@ export class CourseComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error('Error in subscription:', err);
           this.isLoading = false;
-          this.errorMessage = 'Erreur lors du chargement du cours';
+          this.errorMessage = 'COURSE_PAGE.ERROR_LOADING';
         }
       });
   }
@@ -617,7 +619,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   validateAccessKey() {
     console.log('validateAccessKey called');
     if (!this.course || !this.accessKey.trim()) {
-      this.errorMessage = 'Veuillez entrer une clé d\'accès';
+      this.errorMessage = 'COURSE_PAGE.ERROR_ACCESS_KEY_REQUIRED';
       return;
     }
 
@@ -635,7 +637,7 @@ export class CourseComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     } else {
       console.log('Access key is invalid');
-      this.errorMessage = 'Clé d\'accès invalide';
+      this.errorMessage = 'COURSE_PAGE.ERROR_ACCESS_KEY_INVALID';
     }
   }
 
@@ -886,9 +888,9 @@ export class CourseComponent implements OnInit, OnDestroy {
     if (!this.course) return '';
     // Map of category labels
     const labels: Record<string, string> = {
-      'thermo': 'Thermo Fromage',
-      'automatisme': 'Automatisme',
-      'process': 'Process'
+      'thermo': this.translateService.instant('COURSE_PAGE.CATEGORY_THERMO'),
+      'automatisme': this.translateService.instant('COURSE_PAGE.CATEGORY_AUTOMATION'),
+      'process': this.translateService.instant('COURSE_PAGE.CATEGORY_PROCESS')
     };
     return labels[this.course.category] || this.course.category;
   }
@@ -921,9 +923,9 @@ export class CourseComponent implements OnInit, OnDestroy {
   postQuestion() {
     if (!this.newQuestion.trim() || !this.course?.id) return;
 
-    const userName = localStorage.getItem('userName') || 'Utilisateur';
+    const userName = localStorage.getItem('userName') || this.translateService.instant('COURSE_PAGE.USER_DEFAULT');
     const userId = localStorage.getItem('userEmail') || 'anonymous';
-    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+    const userInitials = userName.split(' ').map((namePart: string) => namePart[0]).join('').toUpperCase();
 
     this.supabaseService.addQuestion({
       courseId: this.course.id,
@@ -946,9 +948,9 @@ export class CourseComponent implements OnInit, OnDestroy {
   postReply(questionId: string) {
     if (!this.replyText[questionId]?.trim()) return;
 
-    const userName = localStorage.getItem('userName') || 'Utilisateur';
+    const userName = localStorage.getItem('userName') || this.translateService.instant('COURSE_PAGE.USER_DEFAULT');
     const userId = localStorage.getItem('userEmail') || 'anonymous';
-    const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+    const userInitials = userName.split(' ').map((namePart: string) => namePart[0]).join('').toUpperCase();
 
     this.supabaseService.addReply(questionId, {
       userId,
@@ -964,7 +966,7 @@ export class CourseComponent implements OnInit, OnDestroy {
   }
 
   deleteQuestion(questionId: string) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette question ?')) {
+    if (confirm(this.translateService.instant('COURSE_PAGE.CONFIRM_DELETE_QUESTION'))) {
       this.supabaseService.deleteQuestion(questionId)
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => {
@@ -981,10 +983,10 @@ export class CourseComponent implements OnInit, OnDestroy {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'à l\'instant';
-    if (diffMins < 60) return `il y a ${diffMins} min`;
-    if (diffHours < 24) return `il y a ${diffHours}h`;
-    if (diffDays === 1) return 'hier';
-    return `il y a ${diffDays} jours`;
+    if (diffMins < 1) return this.translateService.instant('COURSE_PAGE.TIME_JUST_NOW');
+    if (diffMins < 60) return this.translateService.instant('COURSE_PAGE.TIME_MINUTES_AGO', { count: diffMins });
+    if (diffHours < 24) return this.translateService.instant('COURSE_PAGE.TIME_HOURS_AGO', { count: diffHours });
+    if (diffDays === 1) return this.translateService.instant('COURSE_PAGE.TIME_YESTERDAY');
+    return this.translateService.instant('COURSE_PAGE.TIME_DAYS_AGO', { count: diffDays });
   }
 }

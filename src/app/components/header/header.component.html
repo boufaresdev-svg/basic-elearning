@@ -15,14 +15,26 @@
       </button>
 
       <ul class="navbar-menu" [class.active]="isMenuOpen">
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Accueil</a></li>
-        <li><a routerLink="/formations" routerLinkActive="active" (click)="closeMenu()">Formations</a></li>
-        <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">{{ 'HEADER.HOME' | translate }}</a></li>
+        <li><a routerLink="/formations" routerLinkActive="active" (click)="closeMenu()">{{ 'HEADER.FORMATIONS' | translate }}</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">{{ 'HEADER.CONTACT' | translate }}</a></li>
+        <li class="language-item">
+          <label for="language-select" class="sr-only">{{ 'HEADER.LANGUAGE' | translate }}</label>
+          <select
+            id="language-select"
+            class="language-select"
+            [value]="currentLanguage"
+            (change)="changeLanguage($any($event.target).value)">
+            <option value="fr">{{ 'HEADER.LANG_FR' | translate }}</option>
+            <option value="en">{{ 'HEADER.LANG_EN' | translate }}</option>
+            <option value="ar">{{ 'HEADER.LANG_AR' | translate }}</option>
+          </select>
+        </li>
         @if (isAuthenticated) {
-          <li><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">Tableau de Bord</a></li>
-          <li><button class="btn btn-secondary btn-nav logout-btn" (click)="logout()">Déconnexion</button></li>
+          <li><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">{{ 'HEADER.DASHBOARD' | translate }}</a></li>
+          <li><button class="btn btn-secondary btn-nav logout-btn" (click)="logout()">{{ 'HEADER.LOGOUT' | translate }}</button></li>
         } @else {
-          <li><a routerLink="/login" class="btn btn-primary btn-nav" (click)="closeMenu()">Connexion</a></li>
+          <li><a routerLink="/login" class="btn btn-primary btn-nav" (click)="closeMenu()">{{ 'HEADER.LOGIN' | translate }}</a></li>
         }
       </ul>
     </nav>
