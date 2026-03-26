@@ -1,126 +1,87 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { Course } from '../../services/supabase.service';
+import { FormationApiService } from '../../services/formation-api.service';
 
-interface Service {
-  icon: string;
-  translationKey: string;
-}
-
-interface Partner {
-  name: string;
-  logo?: string;
-}
-
-interface Feature {
-  icon: string;
-  translationKey: string;
-}
-
-interface FormationType {
-  icon: string;
-  translationKey: string;
-  highlight: boolean;
+interface HomeStat {
+  id: number;
+  valueKey: string;
+  labelKey: string;
 }
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent {
-  services: Service[] = [
-    {
-      icon: 'integration',
-      translationKey: 'INTEGRATION'
-    },
-    {
-      icon: 'automation',
-      translationKey: 'AUTOMATION'
-    },
-    {
-      icon: 'mechanical',
-      translationKey: 'MECHANICAL'
-    },
-    {
-      icon: 'instrumentation',
-      translationKey: 'INSTRUMENTATION'
-    },
-    {
-      icon: 'training',
-      translationKey: 'TRAINING'
-    },
-    {
-      icon: 'support',
-      translationKey: 'SUPPORT'
-    }
+export class HomeComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
+  isLoadingCourses = signal(true);
+  coursesError = signal<string | null>(null);
+
+  stats: HomeStat[] = [
+    { id: 1, valueKey: 'HOME.STATS.ITEM_1.VALUE', labelKey: 'HOME.STATS.ITEM_1.LABEL' },
+    { id: 2, valueKey: 'HOME.STATS.ITEM_2.VALUE', labelKey: 'HOME.STATS.ITEM_2.LABEL' },
+    { id: 3, valueKey: 'HOME.STATS.ITEM_3.VALUE', labelKey: 'HOME.STATS.ITEM_3.LABEL' },
+    { id: 4, valueKey: 'HOME.STATS.ITEM_4.VALUE', labelKey: 'HOME.STATS.ITEM_4.LABEL' }
   ];
 
-  partners: Partner[] = [
-    { name: 'Delice' },
-    { name: 'Vitalait' },
-    { name: 'Copag' },
-    { name: 'Gipa' },
-    { name: 'Natilaït' },
-    { name: 'Aveva' },
-    { name: 'Tetrapak' },
-    { name: 'Stip' },
-    { name: 'Lepidor' },
-    { name: 'GSM GIAS' },
-    { name: 'Pierre' },
-    { name: 'Sonede' },
-    { name: 'Warda' }
-  ];
+  featuredCourses: Course[] = [];
 
-  features: Feature[] = [
-    {
-      icon: 'siemens',
-      translationKey: 'SIEMENS'
-    },
-    {
-      icon: 'team',
-      translationKey: 'TEAM'
-    },
-    {
-      icon: 'global',
-      translationKey: 'GLOBAL'
-    },
-    {
-      icon: 'quality',
-      translationKey: 'QUALITY'
-    },
-    {
-      icon: 'innovation',
-      translationKey: 'INNOVATION'
-    },
-    {
-      icon: '24-7',
-      translationKey: 'SUPPORT'
-    }
-  ];
+  constructor(
+    private formationApiService: FormationApiService,
+    private translateService: TranslateService
+  ) {}
 
-  formationTypes: FormationType[] = [
-    {
-      icon: 'on-site',
-      translationKey: 'ON_SITE',
-      highlight: true
-    },
-    {
-      icon: 'inter',
-      translationKey: 'INTER',
-      highlight: true
-    },
-    {
-      icon: 'intra',
-      translationKey: 'INTRA',
-      highlight: true
-    },
-    {
-      icon: 'online',
-      translationKey: 'ONLINE',
-      highlight: true
+  ngOnInit(): void {
+    this.loadFeaturedCourses();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadFeaturedCourses(): void {
+    this.isLoadingCourses.set(true);
+    this.coursesError.set(null);
+
+    this.formationApiService
+      .getAllFormations()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (formations) => {
+          const mappedCourses = (formations || []).map((formation) => this.formationApiService.mapFormationToCourse(formation));
+          this.featuredCourses = mappedCourses.slice(0, 4);
+          this.isLoadingCourses.set(false);
+        },
+        error: () => {
+          this.featuredCourses = [];
+          this.coursesError.set('HOME.COURSES.ERROR');
+          this.isLoadingCourses.set(false);
+        }
+      });
+  }
+
+  formatDuration(totalDuration?: number): string {
+    if (!totalDuration) {
+      return this.translateService.instant('HOME.COURSES.NOT_SPECIFIED');
     }
-  ];
+    if (totalDuration < 60) {
+      return `${totalDuration}m`;
+    }
+    const hours = Math.floor(totalDuration / 60);
+    const mins = totalDuration % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+
+  getLevelLabel(course: Course): string {
+    return course.level || this.translateService.instant('HOME.COURSES.ALL_LEVELS');
+  }
 }

@@ -5,229 +5,55 @@
     <h1 class="hero-title">{{ 'HOME.HERO.TITLE' | translate }}</h1>
     <p class="hero-subtitle" [innerHTML]="'HOME.HERO.SUBTITLE' | translate"></p>
     <div class="hero-buttons">
-      <a href="/formations" class="btn btn-primary btn-lg">{{ 'HOME.HERO.BUTTON_PRIMARY' | translate }}</a>
-      <a href="/contact" class="btn btn-outline btn-lg">{{ 'HOME.HERO.BUTTON_OUTLINE' | translate }}</a>
+      <a routerLink="/formations" class="btn btn-primary btn-lg">{{ 'HOME.HERO.BUTTON_PRIMARY' | translate }}</a>
+      <a routerLink="/contact" class="btn btn-outline btn-lg">{{ 'HOME.HERO.BUTTON_OUTLINE' | translate }}</a>
+    </div>
+
+    <div class="hero-stats">
+      @for (stat of stats; track stat.id) {
+        <div class="hero-stat-card">
+          <span class="hero-stat-value">{{ stat.valueKey | translate }}</span>
+          <span class="hero-stat-label">{{ stat.labelKey | translate }}</span>
+        </div>
+      }
     </div>
   </div>
 </section>
 
-<!-- Section Formations -->
+<!-- Section Featured Courses -->
 <section class="section formations-section">
   <div class="container">
     <div class="section-header text-center">
-      <h2>{{ 'HOME.FORMATIONS.TITLE' | translate }}</h2>
-      <p class="section-subtitle">{{ 'HOME.FORMATIONS.SUBTITLE' | translate }}</p>
+      <h2>{{ 'HOME.COURSES.TITLE' | translate }}</h2>
+      <p class="section-subtitle">{{ 'HOME.COURSES.SUBTITLE' | translate }}</p>
     </div>
 
-    <div class="formations-grid">
-      @for (formation of formationTypes; track formation.translationKey) {
-        <div class="formation-card card" [class.highlight]="formation.highlight">
-          <div class="formation-icon" [attr.data-icon]="formation.icon">
-            @if (formation.icon === 'on-site') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-            }
-            @if (formation.icon === 'inter') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            }
-            @if (formation.icon === 'intra') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-            }
-            @if (formation.icon === 'online') {
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            }
-          </div>
-          <h3>{{ 'FORMATION_TYPE.' + formation.translationKey + '.TITLE' | translate }}</h3>
-          <p>{{ 'FORMATION_TYPE.' + formation.translationKey + '.DESC' | translate }}</p>
-          @if (formation.highlight) {
-            <span class="formation-badge">{{ 'HOME.FORMATIONS.BADGE' | translate }}</span>
-          }
-        </div>
-      }
-    </div>
-
-    <div class="cta-box">
-      <h3>{{ 'HOME.FORMATIONS.CTA_TITLE' | translate }}</h3>
-      <p>{{ 'HOME.FORMATIONS.CTA_DESC' | translate }}</p>
-      <a href="/formations" class="btn btn-primary">{{ 'HOME.FORMATIONS.CTA_BUTTON' | translate }}</a>
-    </div>
-  </div>
-</section>
-
-<!-- Section Services -->
-<section class="section services-section">
-  <div class="container">
-    <div class="section-header text-center">
-      <h2>{{ 'HOME.PARTNERS.TITLE' | translate }}</h2>
-      <p class="section-subtitle">{{ 'HOME.PARTNERS.SUBTITLE' | translate }}</p>
-    </div>
-
-    <div class="partners-marquee">
-      <div class="partners-track">
-        @for (partner of partners; track partner.name) {
-          <div class="partner-item">
-            <span>{{ partner.name }}</span>
-          </div>
-        }
-        <!-- Duplicate for infinite scroll effect -->
-        @for (partner of partners; track partner.name) {
-          <div class="partner-item">
-            <span>{{ partner.name }}</span>
-          </div>
+    @if (isLoadingCourses()) {
+      <p class="courses-status">{{ 'HOME.COURSES.LOADING' | translate }}</p>
+    } @else if (coursesError()) {
+      <p class="courses-status error">{{ coursesError()! | translate }}</p>
+    } @else if (featuredCourses.length === 0) {
+      <p class="courses-status">{{ 'HOME.COURSES.EMPTY' | translate }}</p>
+    } @else {
+      <div class="formations-grid">
+        @for (course of featuredCourses; track course.id) {
+          <article class="formation-card card">
+            <div class="course-top">
+              <span class="course-badge">{{ getLevelLabel(course) }}</span>
+              <span class="course-duration">{{ formatDuration(course.total_duration) }}</span>
+            </div>
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.description }}</p>
+            <div class="course-meta">
+              <a [routerLink]="['/course', course.id]" class="course-link">{{ 'HOME.COURSES.LEARN_MORE' | translate }}</a>
+            </div>
+          </article>
         }
       </div>
-    </div>
-  </div>
-</section>
+    }
 
-<!-- Section Services -->
-<section class="section services-section">
-  <div class="container">
-    <div class="section-header text-center">
-      <h2>{{ 'HOME.SERVICES.TITLE' | translate }}</h2>
-      <p class="section-subtitle">{{ 'HOME.SERVICES.SUBTITLE' | translate }}</p>
+    <div class="cta-box">
+      <a routerLink="/formations" class="btn btn-primary">{{ 'HOME.COURSES.CTA' | translate }}</a>
     </div>
-
-    <div class="services-grid">
-      @for (service of services; track service.translationKey) {
-        <div class="service-card card">
-          <div class="service-icon">
-            @switch(service.icon) {
-              @case('integration') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"></path>
-                  <path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"></path>
-                  <line x1="12" y1="20" x2="12" y2="10"></line>
-                  <line x1="8" y1="14" x2="16" y2="14"></line>
-                </svg>
-              }
-              @case('automation') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="1"></circle>
-                  <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
-                </svg>
-              }
-              @case('mechanical') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="9"></circle>
-                  <path d="M12 6v12M6 12h12"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <circle cx="18" cy="6" r="1"></circle>
-                  <circle cx="6" cy="6" r="1"></circle>
-                  <circle cx="18" cy="18" r="1"></circle>
-                  <circle cx="6" cy="18" r="1"></circle>
-                </svg>
-              }
-              @case('instrumentation') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 12a9 9 0 1 0 18 0A9 9 0 0 0 3 12z"></path>
-                  <path d="M12 6v6l4 2"></path>
-                </svg>
-              }
-              @case('training') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                </svg>
-              }
-              @case('support') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              }
-            }
-          </div>
-          <h3>{{ 'SERVICE.' + service.translationKey + '.TITLE' | translate }}</h3>
-          <p>{{ 'SERVICE.' + service.translationKey + '.DESC' | translate }}</p>
-        </div>
-      }
-    </div>
-  </div>
-</section>
-
-<!-- Section Features -->
-<section class="section features-section">
-  <div class="container">
-    <div class="section-header text-center">
-      <h2>{{ 'HOME.FEATURES.TITLE' | translate }}</h2>
-      <p class="section-subtitle">{{ 'HOME.FEATURES.SUBTITLE' | translate }}</p>
-    </div>
-
-    <div class="features-grid">
-      @for (feature of features; track feature.translationKey) {
-        <div class="feature-card">
-          <div class="feature-icon">
-            @switch(feature.icon) {
-              @case('siemens') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                  <polyline points="2 17 12 22 22 17"></polyline>
-                  <polyline points="2 12 12 17 22 12"></polyline>
-                </svg>
-              }
-              @case('team') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              }
-              @case('global') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-              }
-              @case('quality') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-              }
-              @case('innovation') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-              }
-              @case('24-7') {
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              }
-            }
-          </div>
-          <h4>{{ 'FEATURE.' + feature.translationKey + '.TITLE' | translate }}</h4>
-          <p>{{ 'FEATURE.' + feature.translationKey + '.DESC' | translate }}</p>
-        </div>
-      }
-    </div>
-  </div>
-</section>
-
-<!-- Section Contact CTA -->
-<section class="section cta-section text-center">
-  <div class="container">
-    <h2>{{ 'HOME.CONTACT.TITLE' | translate }}</h2>
-    <p>{{ 'HOME.CONTACT.DESC' | translate }}</p>
-    <a href="/contact" class="btn btn-primary btn-lg">{{ 'HOME.CONTACT.BUTTON' | translate }}</a>
   </div>
 </section>

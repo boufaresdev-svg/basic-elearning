@@ -224,6 +224,61 @@
       "BUTTON_PRIMARY": "Découvrir Nos Formations",
       "BUTTON_OUTLINE": "Nous Contacter"
     },
+    "COURSES": {
+      "TITLE": "Quelques Formations Populaires",
+      "SUBTITLE": "Un aperçu rapide des cours les plus demandés",
+      "CTA": "Voir toutes les formations",
+      "LEARN_MORE": "En savoir plus",
+      "LOADING": "Chargement des formations...",
+      "EMPTY": "Aucune formation disponible pour le moment.",
+      "ERROR": "Impossible de charger les formations. Veuillez réessayer.",
+      "NOT_SPECIFIED": "Non spécifié",
+      "ALL_LEVELS": "Tous niveaux",
+      "ITEMS": {
+        "COURSE_1": {
+          "TITLE": "Automatisme Industriel - Niveau 1",
+          "DESC": "Introduction pratique aux bases de l'automatisme et des automates programmables.",
+          "DURATION": "12h",
+          "LEVEL": "Débutant"
+        },
+        "COURSE_2": {
+          "TITLE": "Supervision SCADA",
+          "DESC": "Concevez et exploitez des interfaces de supervision pour vos process industriels.",
+          "DURATION": "16h",
+          "LEVEL": "Intermédiaire"
+        },
+        "COURSE_3": {
+          "TITLE": "Maintenance Industrielle",
+          "DESC": "Méthodes et outils pour améliorer la disponibilité et la performance des équipements.",
+          "DURATION": "14h",
+          "LEVEL": "Intermédiaire"
+        },
+        "COURSE_4": {
+          "TITLE": "Industrie 4.0 & IoT",
+          "DESC": "Appliquez les concepts de digitalisation et de connectivité dans l'environnement industriel.",
+          "DURATION": "10h",
+          "LEVEL": "Avancé"
+        }
+      }
+    },
+    "STATS": {
+      "ITEM_1": {
+        "VALUE": "18+",
+        "LABEL": "Formations certifiantes"
+      },
+      "ITEM_2": {
+        "VALUE": "1.2k+",
+        "LABEL": "Apprenants formés"
+      },
+      "ITEM_3": {
+        "VALUE": "92%",
+        "LABEL": "Taux de réussite"
+      },
+      "ITEM_4": {
+        "VALUE": "24/7",
+        "LABEL": "Support technique"
+      }
+    },
     "FORMATIONS": {
       "TITLE": "Nos Modalités de Formation",
       "SUBTITLE": "Des formations certifiantes adaptées à vos besoins et disponibles selon vos préférences",

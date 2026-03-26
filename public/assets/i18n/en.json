@@ -224,6 +224,61 @@
       "BUTTON_PRIMARY": "Discover Our Courses",
       "BUTTON_OUTLINE": "Contact Us"
     },
+    "COURSES": {
+      "TITLE": "Popular Courses",
+      "SUBTITLE": "A quick overview of the most requested courses",
+      "CTA": "View all courses",
+      "LEARN_MORE": "Learn more",
+      "LOADING": "Loading courses...",
+      "EMPTY": "No courses available right now.",
+      "ERROR": "Unable to load courses. Please try again.",
+      "NOT_SPECIFIED": "Not specified",
+      "ALL_LEVELS": "All levels",
+      "ITEMS": {
+        "COURSE_1": {
+          "TITLE": "Industrial Automation - Level 1",
+          "DESC": "Hands-on introduction to automation fundamentals and PLC basics.",
+          "DURATION": "12h",
+          "LEVEL": "Beginner"
+        },
+        "COURSE_2": {
+          "TITLE": "SCADA Supervision",
+          "DESC": "Design and operate supervision interfaces for industrial processes.",
+          "DURATION": "16h",
+          "LEVEL": "Intermediate"
+        },
+        "COURSE_3": {
+          "TITLE": "Industrial Maintenance",
+          "DESC": "Methods and tools to improve equipment availability and performance.",
+          "DURATION": "14h",
+          "LEVEL": "Intermediate"
+        },
+        "COURSE_4": {
+          "TITLE": "Industry 4.0 & IoT",
+          "DESC": "Apply digitization and connectivity concepts in industrial environments.",
+          "DURATION": "10h",
+          "LEVEL": "Advanced"
+        }
+      }
+    },
+    "STATS": {
+      "ITEM_1": {
+        "VALUE": "18+",
+        "LABEL": "Certified courses"
+      },
+      "ITEM_2": {
+        "VALUE": "1.2k+",
+        "LABEL": "Learners trained"
+      },
+      "ITEM_3": {
+        "VALUE": "92%",
+        "LABEL": "Completion rate"
+      },
+      "ITEM_4": {
+        "VALUE": "24/7",
+        "LABEL": "Technical support"
+      }
+    },
     "FORMATIONS": {
       "TITLE": "Our Training Methods",
       "SUBTITLE": "Certified courses tailored to your needs and available according to your preferences",
