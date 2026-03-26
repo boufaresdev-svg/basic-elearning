@@ -32,6 +32,12 @@ export class FormationsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   isLoadingFormations = signal(true);
   errorMessage = signal<string | null>(null);
+  private readonly fallbackCovers: string[] = [
+    'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1200&auto=format&fit=crop'
+  ];
 
   sidebarCategories: SidebarCategory[] = [
     {
@@ -255,5 +261,34 @@ export class FormationsComponent implements OnInit, OnDestroy {
     return days === 1
       ? `1 ${this.translateService.instant('FORMATIONS_PAGE.DAY')}`
       : `${days} ${this.translateService.instant('FORMATIONS_PAGE.DAYS')}`;
+  }
+
+  getCardImage(course: Course): string {
+    if (course.image && course.image.trim().length > 0) {
+      return course.image;
+    }
+
+    const indexSeed = Number(course.id) || 0;
+    const imageIndex = Math.abs(indexSeed) % this.fallbackCovers.length;
+    return this.fallbackCovers[imageIndex];
+  }
+
+  getInstructorName(course: Course): string {
+    return course.instructor || this.translateService.instant('COURSE_PAGE.SMS2I_TEAM');
+  }
+
+  getInstructorInitials(course: Course): string {
+    const name = this.getInstructorName(course).trim();
+    const parts = name.split(' ').filter(Boolean);
+
+    if (parts.length === 0) {
+      return 'SM';
+    }
+
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
 }

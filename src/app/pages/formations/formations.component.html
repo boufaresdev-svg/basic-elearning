@@ -113,37 +113,10 @@
           @for (course of getFilteredCourses(); track course.id) {
             <div class="formation-card">
               <!-- Course Image -->
-              <div class="formation-image">
-                @if (course.image) {
-                  <img [src]="course.image" [alt]="course.title" />
-                } @else {
-                  <div class="formation-placeholder">
-                    @switch(getCategoryIcon(course.category)) {
-                      @case('automation') {
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="1"></circle>
-                          <path d="M12 1v6m6-1h-5M6 8H1m17 6h5M8 12H3m13 0h5M6 20h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"></path>
-                        </svg>
-                      }
-                      @case('thermo') {
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                        </svg>
-                      }
-                      @case('process') {
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
-                        </svg>
-                      }
-                      @default {
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                        </svg>
-                      }
-                    }
-                  </div>
-                }
+              <div
+                class="formation-image"
+                [style.background-image]="'linear-gradient(180deg, rgba(9, 40, 85, 0.08) 10%, rgba(9, 40, 85, 0.62) 100%), url(' + getCardImage(course) + ')'"
+              >
                 <div class="formation-overlay">
                   <span class="category-badge" [class]="'category-' + course.category">
                     {{ getCategoryLabel(course.category) }}
@@ -175,6 +148,14 @@
                 </div>
 
                 <p class="formation-description">{{ course.description }}</p>
+
+                <div class="instructor-row">
+                  <span class="instructor-avatar">{{ getInstructorInitials(course) }}</span>
+                  <div class="instructor-meta">
+                    <span class="instructor-label">{{ 'COURSE_PAGE.INSTRUCTOR' | translate }}</span>
+                    <span class="instructor-name">{{ getInstructorName(course) }}</span>
+                  </div>
+                </div>
 
                 <div class="formation-footer">
                   @if (course.access_key === 'open') {

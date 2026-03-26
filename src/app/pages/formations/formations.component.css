@@ -220,7 +220,7 @@
 
 .formations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Adjusted to fit 3 items */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--spacing-lg);
 }
 
@@ -293,7 +293,7 @@
 /* Formation Cards */
 .formation-card {
   background: var(--color-white);
-  border-radius: var(--border-radius-xl);
+  border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
@@ -309,30 +309,23 @@
 /* Formation Image */
 .formation-image {
   position: relative;
-  height: 220px;
+  height: 185px;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+  background-color: #0d4d9f;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-.formation-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+.formation-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 31, 66, 0.04) 0%, rgba(7, 31, 66, 0.58) 100%);
 }
 
-.formation-card:hover .formation-image img {
-  transform: scale(1.05);
-}
-
-.formation-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
-  color: var(--color-white);
+.formation-card:hover .formation-image {
+  background-size: 106%;
 }
 
 /* Formation Overlay */
@@ -344,6 +337,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  z-index: 1;
 }
 
 .category-badge {
@@ -395,7 +389,7 @@
 
 /* Formation Content */
 .formation-content {
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -407,9 +401,9 @@
 
 .formation-title {
   color: var(--color-dark);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-weight: 700;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -472,13 +466,56 @@
 .formation-description {
   color: var(--color-gray-600);
   line-height: 1.6;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
+}
+
+.instructor-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.instructor-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-white);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  flex-shrink: 0;
+}
+
+.instructor-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.instructor-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-gray);
+  letter-spacing: 0.5px;
+}
+
+.instructor-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-dark);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .objectives-section {
@@ -530,9 +567,10 @@
 
 /* Formation Footer */
 .formation-footer {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-top: 1px solid var(--color-light);
   background: rgba(0, 102, 204, 0.02);
+  border-radius: 14px;
 }
 
 .btn-primary,
@@ -715,7 +753,7 @@
   }
 
   .formation-image {
-    height: 180px;
+    height: 165px;
   }
 
   .formation-content {

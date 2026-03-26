@@ -1,23 +1,20 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormationApiService } from '../../services/formation-api.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-  identifier: string = ''; // Can be email or matricule
-  password: string = '';
-  rememberMe: boolean = false;
+  identifier: string = '';
   isLoading: boolean = false;
   errorMessage: string = '';
-  loginType: 'email' | 'matricule' = 'email';
   private returnUrl: string = '/dashboard';
 
   constructor(
@@ -37,36 +34,22 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  toggleLoginType() {
-    this.loginType = this.loginType === 'email' ? 'matricule' : 'email';
-    this.identifier = '';
-    this.errorMessage = '';
-  }
-
   onSubmit() {
-    if (!this.identifier || !this.password) {
-      this.errorMessage = 'Veuillez remplir tous les champs';
+    if (!this.identifier) {
+      this.errorMessage = 'Veuillez entrer votre adresse email';
       return;
     }
 
-    // Validate based on login type
-    if (this.loginType === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(this.identifier)) {
-        this.errorMessage = 'Veuillez entrer une adresse email valide';
-        return;
-      }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.identifier)) {
+      this.errorMessage = 'Veuillez entrer une adresse email valide';
+      return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Authenticate against the API using verify endpoint
-    const loginObservable = this.loginType === 'email'
-      ? this.formationApi.loginApprenant(this.identifier, this.password)
-      : this.formationApi.loginApprenantByMatricule(this.identifier, this.password);
-
-    loginObservable.subscribe({
+    this.formationApi.loginApprenant(this.identifier, '').subscribe({
       next: (result) => {
         this.isLoading = false;
         this.cdr.markForCheck();
@@ -82,10 +65,6 @@ export class LoginComponent implements OnInit {
           localStorage.setItem('apprenant', JSON.stringify(result.apprenant));
           if (result.apprenant.matricule) {
             localStorage.setItem('userMatricule', result.apprenant.matricule);
-          }
-
-          if (this.rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
           }
 
           // Redirect to dashboard
