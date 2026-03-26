@@ -232,6 +232,7 @@
       "LOADING": "Chargement des formations...",
       "EMPTY": "Aucune formation disponible pour le moment.",
       "ERROR": "Impossible de charger les formations. Veuillez réessayer.",
+      "PLATFORM_DESC": "Plateforme dédiée à la formation en ligne, offrant un support pédagogique complet (vidéos, documents, tutoriels) et assurant la continuité de l'apprentissage après la réalisation des modules.",
       "NOT_SPECIFIED": "Non spécifié",
       "TYPE_STANDARD": "Formation standard",
       "ALL_LEVELS": "Tous niveaux",

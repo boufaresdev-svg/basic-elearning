@@ -232,6 +232,7 @@
       "LOADING": "Loading courses...",
       "EMPTY": "No courses available right now.",
       "ERROR": "Unable to load courses. Please try again.",
+      "PLATFORM_DESC": "A platform dedicated to online training, offering complete pedagogical support (videos, documents, tutorials) and ensuring continuity of learning after completing the modules.",
       "NOT_SPECIFIED": "Not specified",
       "TYPE_STANDARD": "Standard training",
       "ALL_LEVELS": "All levels",
