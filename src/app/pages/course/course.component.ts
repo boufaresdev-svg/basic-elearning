@@ -29,6 +29,8 @@ export interface ContentGroup {
   styleUrl: './course.component.css'
 })
 export class CourseComponent implements OnInit, OnDestroy {
+  readonly qaEnabled = false;
+  readonly notesEnabled = false;
   course: Course | null = null;
   currentModule: CourseContent | null = null;
   currentModuleIndex: number = 0;
