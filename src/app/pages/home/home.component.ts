@@ -21,6 +21,7 @@ interface HomeStat {
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly maxHomeCourses = 6;
 
   isLoadingCourses = signal(true);
   coursesError = signal<string | null>(null);
@@ -57,8 +58,20 @@ export class HomeComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (formations) => {
-          const mappedCourses = (formations || []).map((formation) => this.formationApiService.mapFormationToCourse(formation));
-          this.featuredCourses = mappedCourses.slice(0, 4);
+          let formationsArray = formations || [];
+          if (Array.isArray(formationsArray) && formationsArray.length > 0 && Array.isArray(formationsArray[0])) {
+            formationsArray = formationsArray[0];
+          }
+
+          const mappedCourses = formationsArray
+            .map((formation) => this.formationApiService.mapFormationToCourse(formation))
+            .filter((course) => !!course?.id && !!course?.title);
+
+          const uniqueCourses = mappedCourses.filter(
+            (course, index, courses) => courses.findIndex((item) => item.id === course.id) === index
+          );
+
+          this.featuredCourses = uniqueCourses.slice(0, this.maxHomeCourses);
           this.isLoadingCourses.set(false);
         },
         error: () => {
@@ -83,5 +96,44 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getLevelLabel(course: Course): string {
     return course.level || this.translateService.instant('HOME.COURSES.ALL_LEVELS');
+  }
+
+  getCourseDescription(course: Course): string {
+    return course.description?.trim() || this.translateService.instant('FORMATIONS_PAGE.NOT_SPECIFIED');
+  }
+
+  getFormationTypeLabelKey(course: Course): string {
+    const rawType = this.getCourseTypeRawValue(course);
+
+    if (rawType.includes('intra')) {
+      return 'FORMATION_TYPE.INTRA.TITLE';
+    }
+
+    if (rawType.includes('inter')) {
+      return 'FORMATION_TYPE.INTER.TITLE';
+    }
+
+    return 'HOME.COURSES.TYPE_STANDARD';
+  }
+
+  private getCourseTypeRawValue(course: Course): string {
+    const extendedCourse = course as Course & {
+      type?: string;
+      categorie?: string;
+      category?: string;
+      sousCategorie?: string;
+    };
+
+    return [
+      extendedCourse.type,
+      extendedCourse.categorie,
+      extendedCourse.category,
+      extendedCourse.sousCategorie,
+      course.title,
+      course.description
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
   }
 }

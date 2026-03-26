@@ -233,6 +233,7 @@
       "EMPTY": "No courses available right now.",
       "ERROR": "Unable to load courses. Please try again.",
       "NOT_SPECIFIED": "Not specified",
+      "TYPE_STANDARD": "Standard training",
       "ALL_LEVELS": "All levels",
       "ITEMS": {
         "COURSE_1": {

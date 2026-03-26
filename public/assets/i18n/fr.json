@@ -233,6 +233,7 @@
       "EMPTY": "Aucune formation disponible pour le moment.",
       "ERROR": "Impossible de charger les formations. Veuillez réessayer.",
       "NOT_SPECIFIED": "Non spécifié",
+      "TYPE_STANDARD": "Formation standard",
       "ALL_LEVELS": "Tous niveaux",
       "ITEMS": {
         "COURSE_1": {

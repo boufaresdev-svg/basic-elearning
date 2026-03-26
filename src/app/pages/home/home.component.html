@@ -26,6 +26,9 @@
     <div class="section-header text-center">
       <h2>{{ 'HOME.COURSES.TITLE' | translate }}</h2>
       <p class="section-subtitle">{{ 'HOME.COURSES.SUBTITLE' | translate }}</p>
+      @if (!isLoadingCourses() && !coursesError() && featuredCourses.length > 0) {
+        <span class="courses-count">{{ featuredCourses.length }} {{ 'FORMATIONS_PAGE.FORMATIONS_COUNT' | translate }}</span>
+      }
     </div>
 
     @if (isLoadingCourses()) {
@@ -39,11 +42,15 @@
         @for (course of featuredCourses; track course.id) {
           <article class="formation-card card">
             <div class="course-top">
-              <span class="course-badge">{{ getLevelLabel(course) }}</span>
+              <span class="course-badge">{{ getFormationTypeLabelKey(course) | translate }}</span>
               <span class="course-duration">{{ formatDuration(course.total_duration) }}</span>
             </div>
+            <span class="course-level">{{ getLevelLabel(course) }}</span>
             <h3>{{ course.title }}</h3>
-            <p>{{ course.description }}</p>
+            <p>{{ getCourseDescription(course) }}</p>
+            @if (course.instructor) {
+              <p class="course-instructor">{{ course.instructor }}</p>
+            }
             <div class="course-meta">
               <a [routerLink]="['/course', course.id]" class="course-link">{{ 'HOME.COURSES.LEARN_MORE' | translate }}</a>
             </div>
@@ -54,6 +61,10 @@
 
     <div class="cta-box">
       <a routerLink="/formations" class="btn btn-primary">{{ 'HOME.COURSES.CTA' | translate }}</a>
+      <div class="cta-types">
+        <span class="cta-type-pill">{{ 'FORMATION_TYPE.INTER.TITLE' | translate }}</span>
+        <span class="cta-type-pill">{{ 'FORMATION_TYPE.INTRA.TITLE' | translate }}</span>
+      </div>
     </div>
   </div>
 </section>
