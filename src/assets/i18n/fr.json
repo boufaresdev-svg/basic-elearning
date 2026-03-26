@@ -265,12 +265,12 @@
     },
     "STATS": {
       "ITEM_1": {
-        "VALUE": "18+",
-        "LABEL": "Formations certifiantes"
+        "VALUE": "3",
+        "LABEL": "Formations"
       },
       "ITEM_2": {
-        "VALUE": "1.2k+",
-        "LABEL": "Apprenants formés"
+        "VALUE": "30+",
+        "LABEL": "Apprenants"
       },
       "ITEM_3": {
         "VALUE": "92%",
