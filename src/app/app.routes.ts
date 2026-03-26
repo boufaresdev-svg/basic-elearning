@@ -21,7 +21,8 @@ export const routes: Routes = [
   {
     path: 'course/:id',
     loadComponent: () => import('./pages/course/course.component').then(m => m.CourseComponent),
-    title: 'Cours - SMS2I'
+    title: 'Cours - SMS2I',
+    canActivate: [authGuard]
   },
   {
     path: 'contact',

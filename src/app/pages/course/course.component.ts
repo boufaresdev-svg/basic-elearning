@@ -96,6 +96,14 @@ export class CourseComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('CourseComponent initialized');
+
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    if (!isAuthenticated) {
+      const currentUrl = this.router.url || '/course';
+      this.router.navigate(['/login'], { queryParams: { returnUrl: currentUrl } });
+      return;
+    }
+
     this.isLoading = true;
     this.currentUserId = localStorage.getItem('userEmail') || '';
 
